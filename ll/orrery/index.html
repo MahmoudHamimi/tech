@@ -1,0 +1,175 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Earth–Moon–Sun Orrery</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+  /* Layout: full-bleed 3D stage; instrument stack top-left, layer toggles top-right, control dock along the bottom. */
+  :root {
+    --bg: #03050a; --panel: rgba(8, 12, 21, .76); --line: #1f2b40; --fg: #e2e8f4; --mut: #8493ad;
+    --sun: #ffb347; --earth: #5cc8ff; --moon: #cfd5e0;
+    --display: 'Barlow Condensed', 'Arial Narrow', 'Helvetica Neue', sans-serif;
+    --mono: 'IBM Plex Mono', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+    color-scheme: dark;
+  }
+  html, body { height: 100%; }
+  body { margin: 0; background: var(--bg); color: var(--fg); font: 12.5px/1.45 var(--mono); overflow: hidden; }
+  #app { position: relative; height: 100%; overflow: hidden; }
+  #stage { position: absolute; inset: 0; touch-action: none; }
+  #stage canvas { display: block; outline: none; }
+  #labels { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+  .tag { position: absolute; left: 0; top: 0; display: flex; align-items: center; gap: 7px; margin: -4px 0 0 -4px; will-change: transform; }
+  .tag i { width: 8px; height: 8px; border-radius: 50%; box-shadow: 0 0 0 2px rgba(3, 5, 10, .7); flex: none; }
+  .tag span { font: 600 13px var(--display); letter-spacing: .14em; text-transform: uppercase; text-shadow: 0 1px 6px #000; }
+
+  .hud { position: absolute; inset: 0; pointer-events: none; display: flex; flex-direction: column; justify-content: space-between; gap: 10px;
+    padding-block: 12px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+  .hud > * { pointer-events: auto; }
+  .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); }
+  .left { display: flex; flex-direction: column; gap: 8px; width: min(310px, calc(100% - 112px)); min-height: 0; overflow-y: auto; align-self: flex-start; scrollbar-width: thin; }
+  .right { position: absolute; top: 12px; right: max(16px, env(safe-area-inset-right, 0px)); }
+
+  .title { padding: 10px 12px 11px; }
+  .title h1 { margin: 0; font: 600 20px/1.1 var(--display); letter-spacing: .16em; text-transform: uppercase; text-wrap: balance; }
+  .title h1 b { color: var(--mut); font-weight: 500; padding: 0 .12em; }
+  .clock { display: flex; align-items: baseline; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
+  #utcTime { font: 600 34px/1 var(--display); letter-spacing: .04em; font-variant-numeric: tabular-nums; }
+  #utcDate { color: var(--mut); font-variant-numeric: tabular-nums; }
+  .clock em { font-style: normal; font: 600 11px var(--display); letter-spacing: .16em; color: var(--earth); }
+  #local { color: var(--mut); font-size: 11.5px; margin-top: 4px; }
+
+  details > summary { list-style: none; cursor: pointer; padding: 9px 12px; font: 600 12px var(--display); letter-spacing: .16em; text-transform: uppercase; display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+  details > summary::-webkit-details-marker { display: none; }
+  details > summary::after { content: '+'; color: var(--mut); font: 500 14px var(--mono); }
+  details[open] > summary::after { content: '–'; }
+  summary:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible { outline: 2px solid var(--earth); outline-offset: 1px; }
+  dl { margin: 0; padding: 2px 12px 12px; display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 5px 14px; }
+  dt { color: var(--mut); }
+  dd { margin: 0; text-align: right; font-variant-numeric: tabular-nums; }
+  dd small { display: block; color: var(--mut); font-size: 11px; }
+  #align[data-state="hot"] { color: var(--sun); font-weight: 500; }
+  .note { padding: 0 12px 11px; color: var(--mut); font-size: 11px; line-height: 1.5; margin: 0; }
+
+  #layers label { display: flex; align-items: center; gap: 8px; padding: 4px 12px; cursor: pointer; white-space: nowrap; }
+  #layers { min-width: 128px; padding-bottom: 6px; }
+  input[type="checkbox"] { accent-color: var(--earth); width: 14px; height: 14px; margin: 0; }
+
+  .dock { display: flex; flex-direction: column; gap: 8px; padding: 8px; }
+  .row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .seg { display: inline-flex; flex-wrap: wrap; border: 1px solid var(--line); border-radius: 5px; overflow: hidden; }
+  .seg button + button { border-left: 1px solid var(--line); }
+  button { font: 600 12px var(--display); letter-spacing: .12em; text-transform: uppercase; color: var(--fg); background: transparent; border: 0; padding: 9px 11px; min-height: 36px; cursor: pointer; }
+  button:hover { background: rgba(255, 255, 255, .07); }
+  button[aria-pressed="true"] { background: var(--fg); color: var(--bg); }
+  .zoom button { font: 500 18px/1 var(--mono); min-width: 42px; padding: 0; }
+  .lbl { font: 600 11px var(--display); letter-spacing: .16em; text-transform: uppercase; color: var(--mut); }
+  input[type="datetime-local"], select { background: rgba(255, 255, 255, .05); color: var(--fg); border: 1px solid var(--line); border-radius: 4px; padding: 7px 8px; min-height: 36px; font: 12px var(--mono); max-width: 100%; box-sizing: border-box; }
+  #rate { margin-left: auto; font: 600 12px var(--display); letter-spacing: .16em; text-transform: uppercase; color: var(--sun); }
+  #rate[data-live="true"] { color: var(--earth); }
+  #rate[data-live="true"]::before { content: ''; display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: currentColor; margin-right: 7px; animation: pulse 1.6s ease-in-out infinite; }
+  @keyframes pulse { 50% { opacity: .25; } }
+
+  #hint, #loading { transition: opacity .6s; }
+  #hint { position: absolute; left: 50%; top: 14px; transform: translateX(-50%); padding: 7px 14px; border-radius: 999px; background: var(--panel); border: 1px solid var(--line); color: var(--mut); white-space: nowrap; pointer-events: none; font-size: 11.5px; }
+  #loading { position: absolute; inset: 0; display: grid; place-content: center; gap: 14px; background: var(--bg); text-align: center; z-index: 5; }
+  #loading p { margin: 0; font: 600 14px var(--display); letter-spacing: .2em; text-transform: uppercase; color: var(--mut); }
+  #loading span { display: block; width: 160px; height: 2px; margin: 0 auto; background: linear-gradient(90deg, transparent, var(--earth), transparent); background-size: 60% 100%; background-repeat: no-repeat; animation: sweep 1.2s linear infinite; }
+  @keyframes sweep { from { background-position: -60% 0; } to { background-position: 160% 0; } }
+  .gone { opacity: 0; pointer-events: none; }
+  @media (max-width: 720px) {
+    #hint { display: none; }
+    #utcTime { font-size: 28px; }
+    .dock .lbl { display: none; }
+    #rate { margin-left: 0; }
+  }
+  @media (prefers-reduced-motion: reduce) { #rate::before, #loading span { animation: none !important; } }
+</style>
+
+<div id="app">
+  <div id="stage"></div>
+  <div id="labels"></div>
+
+  <div class="hud">
+    <div class="left">
+      <header class="panel title">
+        <h1>Earth<b>·</b>Moon<b>·</b>Sun</h1>
+        <div class="clock"><span id="utcTime">00:00:00</span><em>UTC</em><span id="utcDate"></span></div>
+        <div id="local"></div>
+      </header>
+      <details class="panel" id="readout">
+        <summary>Instruments</summary>
+        <dl>
+          <dt>Moon phase</dt><dd><span id="phase">–</span><small id="illum"></small></dd>
+          <dt>Moon age</dt><dd id="age">–</dd>
+          <dt>Earth–Moon</dt><dd id="mdist">–</dd>
+          <dt>Earth–Sun</dt><dd><span id="sdist">–</span><small id="sau"></small></dd>
+          <dt>Sun overhead</dt><dd id="ssub">–</dd>
+          <dt>Moon overhead</dt><dd id="msub">–</dd>
+          <dt>Earth rotation</dt><dd id="gmst">–</dd>
+          <dt>Alignment</dt><dd><span id="align">–</span><small id="sep"></small></dd>
+          <dt>Camera</dt><dd id="cam">–</dd>
+        </dl>
+        <p class="note">Sizes and distances are true to scale. Positions use a low-precision ephemeris, accurate to about 0.3° for the Moon, so eclipse geometry is approximate.</p>
+      </details>
+    </div>
+
+    <details class="panel right" id="layers">
+      <summary>Layers</summary>
+      <label><input type="checkbox" data-vis="orbits" checked> Orbits</label>
+      <label><input type="checkbox" data-vis="rays" checked> Sight lines</label>
+      <label><input type="checkbox" data-vis="labels" checked> Labels</label>
+      <label><input type="checkbox" data-vis="grid"> Grid and axis</label>
+    </details>
+
+    <div id="hint" class="panel">Drag to orbit · scroll or pinch to zoom</div>
+
+    <section class="panel dock" aria-label="Controls">
+      <div class="row">
+        <span class="lbl">Focus</span>
+        <div class="seg" role="group" aria-label="Focus">
+          <button data-focus="earth" aria-pressed="true">Earth</button>
+          <button data-focus="moon" aria-pressed="false">Moon</button>
+          <button data-focus="sun" aria-pressed="false">Sun</button>
+          <button data-focus="system" aria-pressed="false">Earth–Moon</button>
+          <button data-focus="sunearth" aria-pressed="false">Sun–Earth</button>
+        </div>
+        <div class="seg zoom" role="group" aria-label="Zoom">
+          <button id="zout" aria-label="Zoom out">−</button>
+          <button id="zin" aria-label="Zoom in">+</button>
+        </div>
+      </div>
+      <div class="row">
+        <span class="lbl">Time</span>
+        <div class="seg" role="group" aria-label="Time speed">
+          <button id="pause" aria-pressed="false">Pause</button>
+          <button id="rev" aria-pressed="false">Reverse</button>
+          <button data-speed="1">Real time</button>
+          <button data-speed="60">1 min/s</button>
+          <button data-speed="3600">1 hour/s</button>
+          <button data-speed="86400">1 day/s</button>
+          <button data-speed="604800">1 week/s</button>
+          <button data-speed="2629800">1 month/s</button>
+        </div>
+        <div class="seg"><button id="now">Now</button></div>
+        <input type="datetime-local" id="dt" aria-label="Set date and time (UTC)">
+        <select id="events" aria-label="Jump to an eclipse">
+          <option value="">Jump to an eclipse</option>
+          <option value="2026-03-03T11:33:00Z">Total lunar · 3 Mar 2026</option>
+          <option value="2026-08-12T17:46:00Z">Total solar · 12 Aug 2026</option>
+          <option value="2026-08-28T04:13:00Z">Partial lunar · 28 Aug 2026</option>
+          <option value="2027-08-02T10:07:00Z">Total solar · 2 Aug 2027</option>
+        </select>
+        <span id="rate">Live</span>
+      </div>
+    </section>
+  </div>
+
+  <div id="loading"><p>Painting continents and craters</p><span></span></div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script src="geo.js"></script>
+<script src="tex.js"></script>
+<script src="main.js"></script>
+
+</body></html>
