@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>tech.vamimi — Engineering &amp; Scientific Software</title>
-<meta name="description" content="Precision software for engineering analysis and scientific visualisation.">
+<meta name="description" content="Precision software for engineering analysis, mathematics and scientific visualisation.">
 <meta name="color-scheme" content="light dark">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -35,6 +35,7 @@
     --accent-soft: #e8f0fb;
     --truss: #1f6fd1;
     --orrery: #c97a12;
+    --slope: #2f7d64;
     --ok: #12805c;
     --shadow: 0 1px 2px rgba(14, 23, 38, .04), 0 8px 24px -12px rgba(14, 23, 38, .12);
     --shadow-hover: 0 2px 4px rgba(14, 23, 38, .05), 0 22px 44px -18px rgba(14, 23, 38, .25);
@@ -60,6 +61,7 @@
     --accent-soft: #14243b;
     --truss: #6aa8ff;
     --orrery: #f0a63c;
+    --slope: #4fc79c;
     --ok: #3fcf9b;
     --shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 8px 24px -12px rgba(0, 0, 0, .5);
     --shadow-hover: 0 2px 4px rgba(0, 0, 0, .35), 0 22px 44px -18px rgba(0, 0, 0, .7);
@@ -218,9 +220,9 @@
       <aside class="hero-panel" aria-label="Portfolio at a glance">
         <h3>Portfolio at a glance</h3>
         <div class="stat-row">
-          <div class="stat"><b id="productCount">2</b><span>Products in service</span></div>
+          <div class="stat"><b id="productCount">3</b><span>Products in service</span></div>
           <div class="stat"><b>0</b><span>Installs required</span></div>
-          <div class="stat"><b>2</b><span>Disciplines covered</span></div>
+          <div class="stat"><b>3</b><span>Disciplines covered</span></div>
           <div class="stat"><b>100%</b><span>Runs in the browser</span></div>
         </div>
         <div class="status"><i aria-hidden="true"></i>Free to use · No account required</div>
@@ -240,7 +242,7 @@
 
       <div class="grid">
         <!-- Product: Truss Workbench -->
-        <a class="card" href="truss/" style="--c: var(--truss)">
+        <a class="card" href="truss/index.html" style="--c: var(--truss)">
           <div class="card-art" aria-hidden="true">
             <svg viewBox="0 0 400 212" preserveAspectRatio="xMidYMid slice">
               <defs>
@@ -286,7 +288,7 @@
         </a>
 
         <!-- Product: Orrery -->
-        <a class="card" href="orrery/" style="--c: var(--orrery)">
+        <a class="card" href="orrery/index.html" style="--c: var(--orrery)">
           <div class="card-art" aria-hidden="true">
             <svg viewBox="0 0 400 212" preserveAspectRatio="xMidYMid slice">
               <defs>
@@ -316,6 +318,40 @@
             </ul>
             <div class="card-foot">
               <span>Interactive 3D</span>
+              <span class="card-go">Launch application
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+              </span>
+            </div>
+          </div>
+        </a>
+
+        <!-- Product: Slope Bench -->
+        <a class="card" href="slope/index.html" style="--c: var(--slope)">
+          <div class="card-art" aria-hidden="true">
+            <svg viewBox="0 0 400 212" preserveAspectRatio="xMidYMid slice">
+              <defs>
+                <pattern id="g3" width="20" height="20" patternUnits="userSpaceOnUse"><path d="M20 0H0V20" fill="none" stroke="var(--line)" stroke-width="1"/></pattern>
+              </defs>
+              <rect width="400" height="212" fill="url(#g3)"/>
+              <path d="M0 106 H400" stroke="var(--ink-3)" stroke-width="1.5" opacity=".6"/>
+              <path d="M200 0 V212" stroke="var(--ink-3)" stroke-width="1.5" opacity=".6"/>
+              <path d="M20 150 C70 150 90 40 140 40 S210 170 260 170 S330 60 380 60" fill="none" stroke="var(--slope)" stroke-width="3.5" stroke-linecap="round"/>
+              <path d="M20 70 C60 60 90 106 120 140 S190 120 230 70 S320 110 380 150" fill="none" stroke="#b3542c" stroke-width="2.5" stroke-linecap="round" stroke-dasharray="6 5" opacity=".9"/>
+              <path d="M95 40 H185" stroke="var(--ink)" stroke-width="1.5" opacity=".55"/>
+              <circle cx="140" cy="40" r="5" fill="var(--surface)" stroke="var(--ink)" stroke-width="2"/>
+            </svg>
+          </div>
+          <div class="card-body">
+            <div class="card-meta"><span class="tag">Mathematics</span><span class="tag tag-plain">Web app</span></div>
+            <h3>Slope Bench</h3>
+            <p>Symbolic differentiation and plotting. Enter any expression in x and compare the function with its first and second derivatives on one chart.</p>
+            <ul class="feat">
+              <li>Exact first and second derivatives</li>
+              <li>Toggle y, y′ and y″ independently</li>
+              <li>Pan, zoom and read values directly from the curve</li>
+            </ul>
+            <div class="card-foot">
+              <span>Calculus</span>
               <span class="card-go">Launch application
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
               </span>
@@ -386,8 +422,9 @@
   <div class="wrap">
     <span>© <span id="year">2026</span> tech.vamimi. All rights reserved.</span>
     <nav aria-label="Footer">
-      <a href="truss/">Truss Workbench</a>
-      <a href="orrery/">Orrery</a>
+      <a href="truss/index.html">Truss Workbench</a>
+      <a href="orrery/index.html">Orrery</a>
+      <a href="slope/index.html">Slope Bench</a>
       <a href="https://github.com/MahmoudHamimi/tech" rel="noopener">GitHub</a>
     </nav>
   </div>
