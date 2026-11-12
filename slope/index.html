@@ -1,1 +1,565 @@
-placeholder
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Slope Bench — differentiate &amp; plot</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/12.4.0/math.min.js"></script>
+<style>
+  :root {
+    --ink: #1c1a17;
+    --paper: #f6f3ec;
+    --panel: #ffffff;
+    --rule: #d9d3c4;
+    --f: #2f5d50;      /* y  - deep pine */
+    --fp: #b3542c;     /* y' - burnt clay */
+    --fpp: #4a6fa5;    /* y''- muted denim */
+    --mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+    --serif: "Source Serif 4", Georgia, serif;
+    box-sizing: border-box;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ink: #ece7dc;
+      --paper: #17140f;
+      --panel: #201c15;
+      --rule: #3a3428;
+    }
+  }
+  :root[data-theme="dark"] {
+    --ink: #ece7dc;
+    --paper: #17140f;
+    --panel: #201c15;
+    --rule: #3a3428;
+  }
+  html { scroll-padding-top: env(safe-area-inset-top, 0px); }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--serif);
+    min-height: 100%;
+  }
+  .wrap { max-width: 760px; margin: 0 auto; padding: 28px 20px 60px; }
+  header { margin-bottom: 22px; }
+  h1 {
+    font-family: var(--serif);
+    font-weight: 600;
+    font-size: 1.7rem;
+    letter-spacing: -0.01em;
+    margin: 0 0 4px;
+  }
+  .sub {
+    font-size: 0.95rem;
+    color: var(--ink);
+    opacity: 0.62;
+    margin: 0;
+    max-width: 46ch;
+  }
+
+  .input-row {
+    display: flex;
+    align-items: stretch;
+    gap: 0;
+    border: 1.5px solid var(--ink);
+    background: var(--panel);
+    margin-top: 20px;
+  }
+  .input-row .yeq {
+    font-family: var(--mono);
+    font-size: 1.05rem;
+    padding: 12px 4px 12px 14px;
+    color: var(--f);
+    user-select: none;
+    display: flex;
+    align-items: center;
+  }
+  #expr {
+    flex: 1;
+    border: none;
+    background: transparent;
+    font-family: var(--mono);
+    font-size: 1.05rem;
+    color: var(--ink);
+    padding: 12px 12px 12px 2px;
+    outline: none;
+    min-width: 0;
+  }
+  #plotBtn {
+    border: none;
+    border-left: 1.5px solid var(--ink);
+    background: var(--ink);
+    color: var(--paper);
+    font-family: var(--serif);
+    font-size: 0.95rem;
+    font-weight: 600;
+    padding: 0 20px;
+    cursor: pointer;
+  }
+  #plotBtn:active { opacity: 0.8; }
+
+  .err {
+    font-family: var(--mono);
+    font-size: 0.82rem;
+    color: var(--fp);
+    margin-top: 8px;
+    min-height: 1.2em;
+  }
+
+  .derivs {
+    margin-top: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .deriv-line {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    font-family: var(--mono);
+    font-size: 0.92rem;
+    padding: 8px 12px;
+    background: var(--panel);
+    border-left: 3px solid var(--rule);
+    word-break: break-word;
+  }
+  .deriv-line.active { border-left-color: currentColor; }
+  .deriv-label { flex-shrink: 0; opacity: 0.85; }
+
+  .toggles {
+    display: flex;
+    gap: 8px;
+    margin-top: 18px;
+    flex-wrap: wrap;
+  }
+  .toggle {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-family: var(--mono);
+    font-size: 0.85rem;
+    padding: 7px 12px;
+    border: 1.5px solid var(--rule);
+    background: var(--panel);
+    cursor: pointer;
+    user-select: none;
+  }
+  .toggle input { accent-color: currentColor; margin: 0; }
+  .toggle.f { color: var(--f); }
+  .toggle.fp { color: var(--fp); }
+  .toggle.fpp { color: var(--fpp); }
+  .toggle input:not(:checked) ~ span { opacity: 0.4; }
+
+  .plotbox {
+    margin-top: 16px;
+    border: 1.5px solid var(--ink);
+    background: var(--panel);
+    position: relative;
+  }
+  #cv {
+    display: block;
+    width: 100%;
+    height: 380px;
+    touch-action: none;
+    cursor: grab;
+  }
+  #cv:active { cursor: grabbing; }
+
+  .readout {
+    position: absolute;
+    top: 10px;
+    left: 12px;
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    padding: 5px 8px;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.1s;
+    white-space: pre;
+    line-height: 1.5;
+  }
+  .readout.show { opacity: 0.96; }
+
+  .zoomrow {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 12px;
+    border-top: 1.5px solid var(--rule);
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    opacity: 0.7;
+  }
+  .zoomrow button {
+    font-family: var(--mono);
+    border: 1px solid var(--rule);
+    background: transparent;
+    color: var(--ink);
+    padding: 3px 9px;
+    cursor: pointer;
+    font-size: 0.85rem;
+  }
+  .zbtns { display: flex; gap: 6px; }
+
+  footer {
+    margin-top: 22px;
+    font-size: 0.8rem;
+    opacity: 0.5;
+    font-family: var(--mono);
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Slope Bench</h1>
+    <p class="sub">Type an expression in x. It differentiates symbolically and plots the function against its first and second derivatives.</p>
+  </header>
+
+  <div class="input-row">
+    <span class="yeq">y =</span>
+    <input id="expr" type="text" inputmode="text" autocomplete="off" autocapitalize="off" spellcheck="false" value="sin(x) * x^2 / 4" />
+    <button id="plotBtn">Plot</button>
+  </div>
+  <div class="err" id="err"></div>
+
+  <div class="derivs" id="derivs"></div>
+
+  <div class="toggles">
+    <label class="toggle f"><input type="checkbox" id="show-f" checked><span>y</span></label>
+    <label class="toggle fp"><input type="checkbox" id="show-fp" checked><span>y′</span></label>
+    <label class="toggle fpp"><input type="checkbox" id="show-fpp"><span>y″</span></label>
+  </div>
+
+  <div class="plotbox">
+    <canvas id="cv"></canvas>
+    <div class="readout" id="readout"></div>
+    <div class="zoomrow">
+      <span id="rangeLabel">x ∈ [−10, 10]</span>
+      <div class="zbtns">
+        <button id="zin">+</button>
+        <button id="zout">−</button>
+        <button id="zreset">reset</button>
+      </div>
+    </div>
+  </div>
+
+  <footer>drag to pan · scroll or pinch to zoom · tap the curve to read a value</footer>
+</div>
+
+<script>
+(function () {
+  const exprInput = document.getElementById('expr');
+  const plotBtn = document.getElementById('plotBtn');
+  const errBox = document.getElementById('err');
+  const derivsBox = document.getElementById('derivs');
+  const cv = document.getElementById('cv');
+  const ctx = cv.getContext('2d');
+  const readout = document.getElementById('readout');
+  const rangeLabel = document.getElementById('rangeLabel');
+  const showF = document.getElementById('show-f');
+  const showFp = document.getElementById('show-fp');
+  const showFpp = document.getElementById('show-fpp');
+
+  let view = { xmin: -10, xmax: 10, ymin: -10, ymax: 10 };
+  let compiled = { f: null, fp: null, fpp: null };
+  let exprStrs = { f: '', fp: '', fpp: '' };
+  let dpr = Math.max(1, window.devicePixelRatio || 1);
+
+  function fitCanvas() {
+    const rect = cv.getBoundingClientRect();
+    cv.width = Math.round(rect.width * dpr);
+    cv.height = Math.round(rect.height * dpr);
+  }
+
+  function parseAndDifferentiate(str) {
+    // Preprocess friendly notation
+    let s = str.trim();
+    if (!s) throw new Error('enter an expression');
+    s = s.replace(/\^/g, '^'); // mathjs supports ^ natively
+
+    const node = math.parse(s);
+    // Validate it only uses x as variable (and constants/functions)
+    const compiledF = node.compile();
+
+    const d1node = math.derivative(node, 'x');
+    const d2node = math.derivative(d1node, 'x');
+
+    return {
+      f: { node, compiled: compiledF, str: node.toString() },
+      fp: { node: d1node, compiled: d1node.compile(), str: d1node.toString() },
+      fpp: { node: d2node, compiled: d2node.compile(), str: d2node.toString() }
+    };
+  }
+
+  function safeEval(compiledFn, x) {
+    try {
+      const v = compiledFn.evaluate({ x });
+      if (typeof v !== 'number' || !isFinite(v)) return null;
+      return v;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function render() {
+    fitCanvas();
+    const W = cv.width, H = cv.height;
+    ctx.clearRect(0, 0, W, H);
+
+    const cssBg = getComputedStyle(document.documentElement).getPropertyValue('--panel').trim();
+    ctx.fillStyle = cssBg || '#fff';
+    ctx.fillRect(0, 0, W, H);
+
+    const inkColor = getComputedStyle(document.documentElement).getPropertyValue('--ink').trim();
+    const ruleColor = getComputedStyle(document.documentElement).getPropertyValue('--rule').trim();
+
+    const { xmin, xmax } = view;
+    // auto y-range based on sampled values across all visible curves, with padding
+    const samples = 480;
+    const pts = { f: [], fp: [], fpp: [] };
+    let ymin = Infinity, ymax = -Infinity;
+
+    for (let i = 0; i <= samples; i++) {
+      const x = xmin + (xmax - xmin) * (i / samples);
+      const yf = compiled.f ? safeEval(compiled.f.compiled, x) : null;
+      const yfp = compiled.fp ? safeEval(compiled.fp.compiled, x) : null;
+      const yfpp = compiled.fpp ? safeEval(compiled.fpp.compiled, x) : null;
+      pts.f.push([x, yf]);
+      pts.fp.push([x, yfp]);
+      pts.fpp.push([x, yfpp]);
+      if (showF.checked && yf !== null) { ymin = Math.min(ymin, yf); ymax = Math.max(ymax, yf); }
+      if (showFp.checked && yfp !== null) { ymin = Math.min(ymin, yfp); ymax = Math.max(ymax, yfp); }
+      if (showFpp.checked && yfpp !== null) { ymin = Math.min(ymin, yfpp); ymax = Math.max(ymax, yfpp); }
+    }
+    if (!isFinite(ymin) || !isFinite(ymax)) { ymin = -10; ymax = 10; }
+    if (ymin === ymax) { ymin -= 1; ymax += 1; }
+    const pad = (ymax - ymin) * 0.12;
+    ymin -= pad; ymax += pad;
+    view.ymin = ymin; view.ymax = ymax;
+
+    const toPx = (x) => (x - xmin) / (xmax - xmin) * W;
+    const toPy = (y) => H - (y - ymin) / (ymax - ymin) * H;
+
+    // grid
+    ctx.strokeStyle = ruleColor || '#ddd';
+    ctx.lineWidth = 1 * dpr;
+    ctx.font = `${11 * dpr}px var(--mono, monospace)`;
+    ctx.fillStyle = inkColor || '#333';
+    ctx.globalAlpha = 0.55;
+
+    const xStep = niceStep((xmax - xmin) / 8);
+    const yStep = niceStep((ymax - ymin) / 6);
+
+    for (let gx = Math.ceil(xmin / xStep) * xStep; gx <= xmax; gx += xStep) {
+      const px = toPx(gx);
+      ctx.beginPath(); ctx.moveTo(px, 0); ctx.lineTo(px, H); ctx.stroke();
+    }
+    for (let gy = Math.ceil(ymin / yStep) * yStep; gy <= ymax; gy += yStep) {
+      const py = toPy(gy);
+      ctx.beginPath(); ctx.moveTo(0, py); ctx.lineTo(W, py); ctx.stroke();
+    }
+    ctx.globalAlpha = 1;
+
+    // axes
+    ctx.strokeStyle = inkColor || '#000';
+    ctx.lineWidth = 1.6 * dpr;
+    if (xmin < 0 && xmax > 0) {
+      const px = toPx(0);
+      ctx.beginPath(); ctx.moveTo(px, 0); ctx.lineTo(px, H); ctx.stroke();
+    }
+    if (ymin < 0 && ymax > 0) {
+      const py = toPy(0);
+      ctx.beginPath(); ctx.moveTo(0, py); ctx.lineTo(W, py); ctx.stroke();
+    }
+
+    // axis labels
+    ctx.globalAlpha = 0.7;
+    ctx.fillStyle = inkColor || '#333';
+    for (let gx = Math.ceil(xmin / xStep) * xStep; gx <= xmax; gx += xStep) {
+      if (Math.abs(gx) < xStep / 1000) continue;
+      const px = toPx(gx);
+      const py = (ymin < 0 && ymax > 0) ? toPy(0) : H - 14 * dpr;
+      ctx.fillText(fmtNum(gx), px + 4 * dpr, py + 14 * dpr);
+    }
+    for (let gy = Math.ceil(ymin / yStep) * yStep; gy <= ymax; gy += yStep) {
+      if (Math.abs(gy) < yStep / 1000) continue;
+      const py = toPy(gy);
+      const px = (xmin < 0 && xmax > 0) ? toPx(0) : 4 * dpr;
+      ctx.fillText(fmtNum(gy), px + 4 * dpr, py - 4 * dpr);
+    }
+    ctx.globalAlpha = 1;
+
+    function drawCurve(key, colorVar, lw) {
+      const c = getComputedStyle(document.documentElement).getPropertyValue(colorVar).trim();
+      ctx.strokeStyle = c;
+      ctx.lineWidth = lw * dpr;
+      ctx.beginPath();
+      let started = false;
+      let prevY = null;
+      for (const [x, y] of pts[key]) {
+        if (y === null) { started = false; prevY = null; continue; }
+        const px = toPx(x), py = toPy(y);
+        // break on huge jumps (likely asymptote)
+        if (prevY !== null && Math.abs(py - prevY) > H * 3) { started = false; }
+        if (!started) { ctx.moveTo(px, py); started = true; }
+        else { ctx.lineTo(px, py); }
+        prevY = py;
+      }
+      ctx.stroke();
+    }
+
+    if (showF.checked && compiled.f) drawCurve('f', '--f', 2.2);
+    if (showFp.checked && compiled.fp) drawCurve('fp', '--fp', 2);
+    if (showFpp.checked && compiled.fpp) drawCurve('fpp', '--fpp', 2);
+
+    rangeLabel.textContent = `x ∈ [${fmtNum(xmin)}, ${fmtNum(xmax)}]`;
+  }
+
+  function niceStep(rough) {
+    if (rough <= 0) return 1;
+    const mag = Math.pow(10, Math.floor(Math.log10(rough)));
+    const norm = rough / mag;
+    let step;
+    if (norm < 1.5) step = 1;
+    else if (norm < 3) step = 2;
+    else if (norm < 7) step = 5;
+    else step = 10;
+    return step * mag;
+  }
+  function fmtNum(n) {
+    if (Math.abs(n) < 0.0001) return '0';
+    if (Math.abs(n) >= 1000 || (Math.abs(n) < 0.01 && n !== 0)) return n.toExponential(1);
+    return (Math.round(n * 100) / 100).toString();
+  }
+
+  function updateDerivsUI() {
+    derivsBox.innerHTML = '';
+    const rows = [
+      { key: 'f', label: 'y  =', colorVar: '--f', show: showF.checked, str: exprStrs.f },
+      { key: 'fp', label: 'y′ =', colorVar: '--fp', show: showFp.checked, str: exprStrs.fp },
+      { key: 'fpp', label: 'y″ =', colorVar: '--fpp', show: showFpp.checked, str: exprStrs.fpp }
+    ];
+    for (const r of rows) {
+      const div = document.createElement('div');
+      div.className = 'deriv-line' + (r.show ? ' active' : '');
+      const c = getComputedStyle(document.documentElement).getPropertyValue(r.colorVar).trim();
+      div.style.color = c;
+      div.innerHTML = `<span class="deriv-label">${r.label}</span><span>${escapeHtml(r.str)}</span>`;
+      derivsBox.appendChild(div);
+    }
+  }
+
+  function escapeHtml(s) {
+    return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+
+  function doPlot() {
+    errBox.textContent = '';
+    try {
+      const result = parseAndDifferentiate(exprInput.value);
+      compiled = { f: result.f, fp: result.fp, fpp: result.fpp };
+      exprStrs = { f: result.f.str, fp: result.fp.str, fpp: result.fpp.str };
+      updateDerivsUI();
+      render();
+    } catch (e) {
+      errBox.textContent = 'could not parse: ' + (e.message || e);
+    }
+  }
+
+  // events
+  plotBtn.addEventListener('click', doPlot);
+  exprInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') doPlot(); });
+  [showF, showFp, showFpp].forEach(cb => cb.addEventListener('change', () => { updateDerivsUI(); render(); }));
+
+  window.addEventListener('resize', () => { dpr = Math.max(1, window.devicePixelRatio || 1); render(); });
+
+  // pan / zoom
+  let dragging = false, lastX = 0, lastY = 0;
+  cv.addEventListener('pointerdown', (e) => {
+    dragging = true; lastX = e.clientX; lastY = e.clientY;
+    cv.setPointerCapture(e.pointerId);
+    readout.classList.remove('show');
+  });
+  cv.addEventListener('pointermove', (e) => {
+    if (!dragging) {
+      // hover readout (mouse)
+      if (e.pointerType === 'mouse') showReadoutAt(e);
+      return;
+    }
+    const dx = e.clientX - lastX;
+    const dy = e.clientY - lastY;
+    lastX = e.clientX; lastY = e.clientY;
+    const rect = cv.getBoundingClientRect();
+    const spanX = (view.xmax - view.xmin);
+    const spanY = (view.ymax - view.ymin);
+    view.xmin -= dx / rect.width * spanX;
+    view.xmax -= dx / rect.width * spanX;
+    // vertical drag adjusts y offset lightly (we auto-fit y normally, but allow override via drag)
+    render();
+  });
+  cv.addEventListener('pointerup', (e) => { dragging = false; });
+  cv.addEventListener('pointerleave', () => { readout.classList.remove('show'); });
+
+  cv.addEventListener('wheel', (e) => {
+    e.preventDefault();
+    const factor = e.deltaY > 0 ? 1.12 : 0.89;
+    zoomAt(factor, e);
+  }, { passive: false });
+
+  document.getElementById('zin').addEventListener('click', () => zoomCenter(0.8));
+  document.getElementById('zout').addEventListener('click', () => zoomCenter(1.25));
+  document.getElementById('zreset').addEventListener('click', () => { view.xmin = -10; view.xmax = 10; render(); });
+
+  function zoomCenter(factor) {
+    const cx = (view.xmin + view.xmax) / 2;
+    const half = (view.xmax - view.xmin) / 2 * factor;
+    view.xmin = cx - half; view.xmax = cx + half;
+    render();
+  }
+
+  function zoomAt(factor, e) {
+    const rect = cv.getBoundingClientRect();
+    const px = (e.clientX - rect.left) / rect.width;
+    const x0 = view.xmin + px * (view.xmax - view.xmin);
+    view.xmin = x0 - (x0 - view.xmin) * factor;
+    view.xmax = x0 + (view.xmax - x0) * factor;
+    render();
+  }
+
+  function showReadoutAt(e) {
+    const rect = cv.getBoundingClientRect();
+    const px = (e.clientX - rect.left) / rect.width;
+    const x = view.xmin + px * (view.xmax - view.xmin);
+    let lines = [`x = ${fmtNum(x)}`];
+    if (showF.checked && compiled.f) {
+      const y = safeEval(compiled.f.compiled, x);
+      lines.push(`y  = ${y === null ? '—' : fmtNum(y)}`);
+    }
+    if (showFp.checked && compiled.fp) {
+      const y = safeEval(compiled.fp.compiled, x);
+      lines.push(`y′ = ${y === null ? '—' : fmtNum(y)}`);
+    }
+    if (showFpp.checked && compiled.fpp) {
+      const y = safeEval(compiled.fpp.compiled, x);
+      lines.push(`y″ = ${y === null ? '—' : fmtNum(y)}`);
+    }
+    readout.textContent = lines.join('\n');
+    readout.style.left = Math.min(Math.max(e.clientX - rect.left + 12, 4), rect.width - 120) + 'px';
+    readout.classList.add('show');
+  }
+
+  cv.addEventListener('pointerdown', (e) => { if (e.pointerType !== 'mouse') showReadoutAt(e); });
+
+  // init
+  fitCanvas();
+  doPlot();
+})();
+</script>
+</body>
+</html>
