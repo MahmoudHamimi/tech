@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>tech.vamimi — Engineering &amp; Scientific Software</title>
-<meta name="description" content="Precision software for engineering analysis, mathematics and scientific visualisation.">
+<title>tech.vamimi — Engineering, Science &amp; Business Software</title>
+<meta name="description" content="Precision software for engineering analysis, mathematics, scientific visualisation and business operations.">
 <meta name="color-scheme" content="light dark">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -36,6 +36,7 @@
     --truss: #1f6fd1;
     --orrery: #c97a12;
     --slope: #2f7d64;
+    --subtrack: #6a5ae0;
     --ok: #12805c;
     --shadow: 0 1px 2px rgba(14, 23, 38, .04), 0 8px 24px -12px rgba(14, 23, 38, .12);
     --shadow-hover: 0 2px 4px rgba(14, 23, 38, .05), 0 22px 44px -18px rgba(14, 23, 38, .25);
@@ -62,6 +63,7 @@
     --truss: #6aa8ff;
     --orrery: #f0a63c;
     --slope: #4fc79c;
+    --subtrack: #9d92ff;
     --ok: #3fcf9b;
     --shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 8px 24px -12px rgba(0, 0, 0, .5);
     --shadow-hover: 0 2px 4px rgba(0, 0, 0, .35), 0 22px 44px -18px rgba(0, 0, 0, .7);
@@ -146,7 +148,7 @@
   .feat li::before { content: ''; flex: none; width: 6px; height: 6px; border-radius: 1px; background: var(--c); transform: translateY(-1px); }
   .card-foot { margin-top: auto; padding-top: 18px; border-top: 1px solid var(--line); display: flex; align-items: center; justify-content: space-between; gap: 12px; }
   .card-foot span { font-size: 13px; color: var(--ink-3); }
-  .card-go { display: inline-flex; align-items: center; gap: 8px; height: 38px; padding: 0 16px; border-radius: 7px; border: 1px solid var(--line-2); font: 600 14px var(--sans); color: var(--ink); transition: background-color .15s, color .15s, border-color .15s; }
+  .card-go { white-space: nowrap; display: inline-flex; align-items: center; gap: 8px; height: 38px; padding: 0 16px; border-radius: 7px; border: 1px solid var(--line-2); font: 600 14px var(--sans); color: var(--ink); transition: background-color .15s, color .15s, border-color .15s; }
   .card-go svg { width: 15px; height: 15px; transition: transform .15s; }
 
   .card-soon { border-style: dashed; box-shadow: none; background: transparent; }
@@ -188,7 +190,7 @@
       <span class="brand-mark" aria-hidden="true">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 5l7 14 7-14"/></svg>
       </span>
-      <span class="brand-name">tech.vamimi<small>Engineering &amp; Scientific Software</small></span>
+      <span class="brand-name">tech.vamimi<small>Engineering · Science · Business</small></span>
     </a>
     <nav class="nav" aria-label="Primary">
       <a href="#products">Products</a>
@@ -209,7 +211,7 @@
       <div>
         <p class="eyebrow">Product Portfolio</p>
         <h1>Precision software for <em>engineering analysis</em> and scientific insight.</h1>
-        <p class="lede">We build focused, browser-based tools that turn complex physical systems into clear, interactive models, with no installation, no licences to manage, and no compromise on rigour.</p>
+        <p class="lede">We build focused, browser-based tools that turn complex systems, from physical structures to business spend, into clear, interactive models, with no installation, no licences to manage, and no compromise on rigour.</p>
         <div class="cta">
           <a class="btn btn-primary" href="#products">Explore our products
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
@@ -220,9 +222,9 @@
       <aside class="hero-panel" aria-label="Portfolio at a glance">
         <h3>Portfolio at a glance</h3>
         <div class="stat-row">
-          <div class="stat"><b id="productCount">3</b><span>Products in service</span></div>
+          <div class="stat"><b id="productCount">4</b><span>Products in service</span></div>
           <div class="stat"><b>0</b><span>Installs required</span></div>
-          <div class="stat"><b>3</b><span>Disciplines covered</span></div>
+          <div class="stat"><b>4</b><span>Disciplines covered</span></div>
           <div class="stat"><b>100%</b><span>Runs in the browser</span></div>
         </div>
         <div class="status"><i aria-hidden="true"></i>Free to use · No account required</div>
@@ -359,6 +361,40 @@
           </div>
         </a>
 
+        <!-- Product: SubTrack Pro -->
+        <a class="card" href="subtrack/index.html" style="--c: var(--subtrack)">
+          <div class="card-art" aria-hidden="true">
+            <svg viewBox="0 0 400 212" preserveAspectRatio="xMidYMid slice">
+              <rect x="40" y="30" width="320" height="152" rx="10" fill="var(--surface)" stroke="var(--line-2)"/>
+              <rect x="40" y="30" width="72" height="152" rx="10" fill="var(--surface-2)"/>
+              <rect x="102" y="30" width="10" height="152" fill="var(--surface-2)"/>
+              <g fill="var(--line-2)"><rect x="52" y="46" width="44" height="7" rx="3.5"/><rect x="52" y="66" width="36" height="6" rx="3"/><rect x="52" y="80" width="40" height="6" rx="3"/><rect x="52" y="94" width="32" height="6" rx="3"/></g>
+              <rect x="52" y="64" width="48" height="10" rx="4" fill="var(--subtrack)" opacity=".25"/>
+              <g fill="var(--surface-2)" stroke="var(--line)"><rect x="126" y="44" width="68" height="40" rx="6"/><rect x="202" y="44" width="68" height="40" rx="6"/><rect x="278" y="44" width="68" height="40" rx="6"/></g>
+              <g fill="var(--ink)" opacity=".75"><rect x="134" y="64" width="36" height="9" rx="2"/><rect x="210" y="64" width="44" height="9" rx="2"/><rect x="286" y="64" width="20" height="9" rx="2"/></g>
+              <g fill="var(--ink-3)" opacity=".6"><rect x="134" y="52" width="28" height="5" rx="2"/><rect x="210" y="52" width="32" height="5" rx="2"/><rect x="286" y="52" width="26" height="5" rx="2"/></g>
+              <g fill="var(--subtrack)"><rect x="134" y="146" width="18" height="24" rx="3" opacity=".55"/><rect x="160" y="140" width="18" height="30" rx="3" opacity=".65"/><rect x="186" y="143" width="18" height="27" rx="3" opacity=".7"/><rect x="212" y="132" width="18" height="38" rx="3" opacity=".8"/><rect x="238" y="126" width="18" height="44" rx="3" opacity=".9"/><rect x="264" y="118" width="18" height="52" rx="3"/></g>
+              <g><circle cx="304" cy="104" r="8" fill="var(--subtrack)" opacity=".2"/><rect x="318" y="100" width="28" height="7" rx="3" fill="var(--line-2)"/><circle cx="304" cy="130" r="8" fill="var(--subtrack)" opacity=".2"/><rect x="318" y="126" width="22" height="7" rx="3" fill="var(--line-2)"/><circle cx="304" cy="156" r="8" fill="var(--subtrack)" opacity=".2"/><rect x="318" y="152" width="26" height="7" rx="3" fill="var(--line-2)"/></g>
+            </svg>
+          </div>
+          <div class="card-body">
+            <div class="card-meta"><span class="tag">Business &amp; Finance</span><span class="tag tag-plain">Web app</span></div>
+            <h3>SubTrack Pro</h3>
+            <p>Subscription spend management for teams. Track every recurring software cost, see what renews next, and understand where the money goes.</p>
+            <ul class="feat">
+              <li>Monthly and annual spend at a glance</li>
+              <li>Renewal calendar for the next 30 days</li>
+              <li>Spending by category, with CSV export</li>
+            </ul>
+            <div class="card-foot">
+              <span>Stored locally</span>
+              <span class="card-go">Launch application
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+              </span>
+            </div>
+          </div>
+        </a>
+
         <!-- Placeholder for future products -->
         <div class="card card-soon" style="--c: var(--ink-3)">
           <div class="card-art" aria-hidden="true">
@@ -425,6 +461,7 @@
       <a href="truss/index.html">Truss Workbench</a>
       <a href="orrery/index.html">Orrery</a>
       <a href="slope/index.html">Slope Bench</a>
+      <a href="subtrack/index.html">SubTrack Pro</a>
       <a href="https://github.com/MahmoudHamimi/tech" rel="noopener">GitHub</a>
     </nav>
   </div>
