@@ -1,1 +1,983 @@
-placeholder
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Tenor</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="Tenor stores contracts, tracks renewals and alerts you ahead of every notice deadline.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300..500;1,6..72,300..500&family=Hanken+Grotesk:wght@400..700&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: black base with an aurora curtain over the hero, one ice-white band explaining the notice-deadline idea, then a working vault (alerts, runway chart, contract list). Single dark look by choice. */
+:root{
+  --ink:#05090B; --ink2:#0A1216; --ink3:#101B20;
+  --line:rgba(234,245,251,.12); --line2:rgba(234,245,251,.24);
+  --ice:#EAF5FB; --ice2:rgba(234,245,251,.74); --ice3:rgba(234,245,251,.56);
+  --ink-soft:#2C3D45; --ink-mute:#4B5E67;
+  --aurora:#52FFB8; --aurora-dk:#006E48; --glow:rgba(82,255,184,.14);
+  --warn:#FFC56B; --crit:#FF8383;
+  --display:'Newsreader',Georgia,'Times New Roman',serif;
+  --body:'Hanken Grotesk',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --mono:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
+  color-scheme:dark;
+}
+*,*::before,*::after{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--ink);color:var(--ice);font:400 15px/1.55 var(--body);-webkit-font-smoothing:antialiased}
+h1,h2,h3,p,ul,ol{margin:0}
+ul,ol{padding:0;list-style:none}
+button,input,select,textarea{font:inherit;color:inherit}
+a{color:inherit}
+.wrap{width:100%;max-width:1180px;margin-left:auto;margin-right:auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+:focus-visible{outline:2px solid var(--aurora);outline-offset:2px}
+.band-ice :focus-visible{outline-color:var(--aurora-dk)}
+
+/* top bar */
+.top{position:relative;z-index:3}
+.bar{display:flex;align-items:center;justify-content:space-between;gap:16px;padding-block:18px}
+.brand{display:flex;align-items:center;gap:10px;font:500 22px/1 var(--display);letter-spacing:-.01em;text-decoration:none}
+.brand svg{width:26px;height:26px;flex:none}
+.nav{display:flex;align-items:center;gap:22px}
+.nav a.l{font-size:14px;color:var(--ice2);text-decoration:none}
+.nav a.l:hover{color:var(--ice)}
+
+/* buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;font:600 14px/1.2 var(--body);padding:10px 16px;border-radius:8px;border:1px solid var(--line2);background:transparent;color:var(--ice);cursor:pointer;text-decoration:none;transition:border-color .15s,background .15s}
+.btn:hover{border-color:var(--ice3)}
+.btn.primary{background:var(--aurora);border-color:var(--aurora);color:var(--ink)}
+.btn.primary:hover{background:#7affc8;border-color:#7affc8}
+.btn.sm{padding:6px 11px;font-size:13px}
+.btn.danger{color:var(--crit);border-color:rgba(255,131,131,.4)}
+.btn.armed{background:var(--crit);border-color:var(--crit);color:var(--ink)}
+
+/* hero */
+.hero{position:relative;overflow:hidden;margin-top:-62px;padding-top:62px}
+#aurora{position:absolute;inset:0;width:100%;height:100%;display:block;-webkit-mask-image:linear-gradient(#000 55%,transparent);mask-image:linear-gradient(#000 55%,transparent)}
+.hero-grid{position:relative;display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,.75fr);gap:48px;align-items:end;padding-block:72px 84px}
+.eyebrow{font:500 12px/1 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--aurora);margin-bottom:22px}
+h1{font:300 clamp(2.5rem,6.4vw,4.9rem)/1.02 var(--display);letter-spacing:-.025em;text-wrap:balance}
+h1 em{font-style:italic;color:var(--aurora)}
+.lede{margin-top:24px;max-width:46ch;font-size:18px;line-height:1.55;color:var(--ice2)}
+.cta{display:flex;flex-wrap:wrap;gap:12px;margin-top:32px}
+.next{background:rgba(10,18,22,.78);border:1px solid var(--line2);border-radius:12px;padding:20px;backdrop-filter:blur(8px)}
+.next h2{font:500 12px/1 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--ice3);margin-bottom:6px}
+.next li{display:flex;justify-content:space-between;gap:16px;padding-block:13px;border-top:1px solid var(--line)}
+.next li:first-of-type{border-top:0}
+.next .n{font-weight:600;overflow-wrap:anywhere}
+.next .p{display:block;font-size:13px;color:var(--ice3)}
+.next .d{text-align:right;flex:none;font:500 13px/1.4 var(--mono)}
+.next .d span{display:block;color:var(--ice3);font-size:12px}
+.next .empty{padding-block:12px;color:var(--ice2);font-size:14px}
+
+/* ice band */
+.band-ice{background:var(--ice);color:var(--ink)}
+.band-ice .wrap{padding-block:80px}
+.how-head{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:48px;align-items:end;margin-bottom:48px}
+.how-head h2{font:300 clamp(2rem,4.4vw,3.2rem)/1.05 var(--display);letter-spacing:-.02em;text-wrap:balance}
+.how-head p{color:var(--ink-soft);font-size:17px;max-width:48ch}
+.calc{background:var(--ink);color:var(--ice);border-radius:12px;padding:26px 28px;display:flex;flex-wrap:wrap;align-items:baseline;gap:8px 18px;margin-bottom:48px}
+.calc .lbl{flex:1 1 100%;font:500 12px/1 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--ice3)}
+.calc .eq{font:400 clamp(1.1rem,2.8vw,1.7rem)/1.3 var(--mono);font-variant-numeric:tabular-nums}
+.calc .eq b{color:var(--aurora);font-weight:500}
+.calc .eq s{text-decoration:none;color:var(--ice3)}
+.feats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:36px}
+.feats h3{font:500 22px/1.2 var(--display);letter-spacing:-.01em;margin:12px 0 10px;text-wrap:balance}
+.feats p{color:var(--ink-soft)}
+.feats .k{font:500 12px/1 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--aurora-dk);border-top:2px solid var(--ink);padding-top:14px;display:block}
+.fine{margin-top:44px;font-size:14px;color:var(--ink-mute);max-width:70ch}
+
+/* vault */
+.vault{padding-block:84px 96px;scroll-margin-top:12px}
+.vh{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:end;gap:16px;margin-bottom:28px}
+.vh h2{font:300 clamp(2rem,4.4vw,3.2rem)/1.05 var(--display);letter-spacing:-.02em}
+.vh .today{font:400 13px/1.4 var(--mono);color:var(--ice3);margin-top:10px}
+.vh .acts{display:flex;flex-wrap:wrap;gap:10px}
+.banner{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;border:1px dashed var(--line2);border-radius:10px;padding:12px 16px;margin-bottom:20px;color:var(--ice2);font-size:14px}
+.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:12px}
+.stat{background:var(--ink2);border:1px solid var(--line);border-radius:10px;padding:16px 18px}
+.stat .k{font:500 11px/1.3 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--ice3)}
+.stat .v{display:block;margin-top:8px;font:400 clamp(1.5rem,3vw,2.1rem)/1.1 var(--display);overflow-wrap:anywhere}
+.stat .s{display:block;margin-top:4px;font-size:13px;color:var(--ice3)}
+.panels{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:12px;margin-bottom:12px}
+.card{background:var(--ink2);border:1px solid var(--line);border-radius:10px;padding:20px;min-width:0}
+.card h3{font:500 12px/1 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--ice3)}
+.card .hd{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:14px}
+.card .hd button{background:none;border:0;padding:0;font-size:13px;color:var(--ice2);text-decoration:underline;cursor:pointer}
+.al{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px 14px;padding-block:14px;border-top:1px solid var(--line);align-items:start}
+.al:first-child{border-top:0}
+.al.handled{opacity:.5}
+.al-t{font-weight:600;overflow-wrap:anywhere}
+.al-t span{font-weight:400;color:var(--ice3);font-size:13px;margin-left:6px}
+.al-m{font-size:14px;color:var(--ice2);margin-top:2px}
+.al-a{display:flex;flex-wrap:wrap;gap:6px;justify-content:flex-end}
+.al-sev{grid-column:1/-1;display:flex;align-items:center;gap:8px}
+.zero{padding-block:8px;color:var(--ice2)}
+.pill{display:inline-flex;align-items:center;font:500 11px/1 var(--mono);letter-spacing:.06em;text-transform:uppercase;padding:5px 8px;border-radius:999px;border:1px solid var(--line2);color:var(--ice2);white-space:nowrap}
+.pill.crit{color:var(--crit);border-color:rgba(255,131,131,.45);background:rgba(255,131,131,.08)}
+.pill.warn{color:var(--warn);border-color:rgba(255,197,107,.45);background:rgba(255,197,107,.08)}
+.pill.info,.pill.ok{color:var(--aurora);border-color:rgba(82,255,184,.4);background:var(--glow)}
+.pill.closed{color:var(--ice3)}
+
+/* runway */
+.rway{--nc:158px}
+.rw-axis,.rw{display:grid;grid-template-columns:var(--nc) minmax(0,1fr);align-items:center}
+.rw-body{position:relative}
+.gl{position:absolute;top:0;bottom:0;width:1px;background:var(--line);left:calc(var(--nc) + (100% - var(--nc)) * var(--p));pointer-events:none}
+.gl.today{background:var(--aurora);opacity:.6}
+.rw-axis .ax{position:relative;height:20px}
+.tk{position:absolute;top:0;transform:translateX(-50%);font:400 10px/1 var(--mono);color:var(--ice3);white-space:nowrap}
+.rw{width:100%;text-align:left;background:none;border:0;padding:5px 0;cursor:pointer;border-radius:6px}
+.rw:hover{background:var(--ink3)}
+.rw-name{padding-right:10px;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.rw-track{position:relative;height:22px}
+.seg{position:absolute;top:7px;height:8px;border-radius:2px}
+.seg.run{background:var(--aurora)}
+.seg.win{background:rgba(255,197,107,.22);border:1px solid var(--warn)}
+.mk{position:absolute;top:2px;width:2px;height:18px;background:var(--ice);margin-left:-1px}
+.mk.dl{background:var(--warn)}
+.mk.over{background:none;width:auto;margin-left:-10px;top:1px;font:500 14px/18px var(--mono);color:var(--ice3)}
+.key{display:flex;flex-wrap:wrap;gap:6px 18px;margin-top:14px;font-size:12px;color:var(--ice3)}
+.key i{display:inline-block;width:14px;height:8px;border-radius:2px;margin-right:6px;vertical-align:middle}
+.key .a{background:var(--aurora)}
+.key .w{background:rgba(255,197,107,.22);border:1px solid var(--warn)}
+.key .e{width:2px;height:12px;background:var(--ice);border-radius:0}
+
+/* toolbar + list */
+.tools{display:grid;grid-template-columns:minmax(0,1.4fr) repeat(3,minmax(0,.8fr));gap:10px;margin-block:20px 12px}
+.opts{display:flex;flex-wrap:wrap;align-items:center;gap:10px 20px;margin-bottom:16px;font-size:13px;color:var(--ice2)}
+.chips{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.chip{border:1px solid var(--line2);background:transparent;border-radius:999px;padding:5px 12px;font:500 12px/1 var(--mono);cursor:pointer;color:var(--ice2)}
+.chip[aria-pressed="true"]{background:var(--aurora);border-color:var(--aurora);color:var(--ink)}
+input,select,textarea{width:100%;background:var(--ink);color:var(--ice);border:1px solid var(--line2);border-radius:8px;padding:9px 11px;min-width:0}
+input::placeholder,textarea::placeholder{color:var(--ice3)}
+.opts select{width:auto;padding:6px 10px}
+.list-head,.row{display:grid;grid-template-columns:minmax(0,2.2fr) minmax(0,.9fr) minmax(0,1fr) minmax(0,1.1fr) minmax(0,.9fr) minmax(0,1.3fr);gap:14px;align-items:center}
+.list-head{padding:0 18px 10px;font:500 11px/1 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--ice3)}
+.row{background:var(--ink2);border:1px solid var(--line);border-radius:10px;padding:14px 18px;margin-bottom:8px}
+.c-main .link{background:none;border:0;padding:0;font-weight:600;font-size:15px;text-align:left;cursor:pointer;overflow-wrap:anywhere}
+.c-main .link:hover{color:var(--aurora)}
+.sub{display:block;font-size:13px;color:var(--ice3)}
+.c-end b,.c-dl b{display:block;font:500 13px/1.4 var(--mono);font-weight:500}
+.c-val{font:500 14px/1.4 var(--mono)}
+.c-act{display:flex;gap:6px;justify-content:flex-end;flex-wrap:wrap}
+.sub.crit{color:var(--crit)}.sub.warn{color:var(--warn)}
+.none{padding:36px 16px;text-align:center;color:var(--ice2);border:1px dashed var(--line2);border-radius:10px}
+
+/* panel */
+.ov{position:fixed;inset:0;z-index:50;display:flex;justify-content:flex-end;background:rgba(2,5,6,.74)}
+.panel{width:min(100%,500px);height:100%;overflow:auto;background:var(--ink2);border-left:1px solid var(--line);padding-top:max(20px,env(safe-area-inset-top,0px));padding-bottom:max(24px,env(safe-area-inset-bottom,0px));padding-left:20px;padding-right:max(20px,env(safe-area-inset-right,0px))}
+.ph{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}
+.ph h2{font:400 28px/1.1 var(--display);letter-spacing:-.01em}
+.x{width:36px;height:36px;border-radius:8px;border:1px solid var(--line2);background:none;font-size:20px;line-height:1;cursor:pointer}
+.fg{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.f{display:flex;flex-direction:column;gap:6px;margin-bottom:12px;min-width:0}
+.f.full{grid-column:1/-1}
+.f label,.lab{font:500 11px/1.2 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--ice3)}
+.f small{color:var(--ice3);font-size:12px}
+.f textarea{min-height:84px;resize:vertical}
+.chk{display:flex;align-items:center;gap:10px;font-size:14px}
+.chk input{width:18px;height:18px;accent-color:var(--aurora)}
+.np{font:400 13px/1.5 var(--mono);color:var(--aurora);background:var(--glow);border-radius:8px;padding:10px 12px;margin-bottom:14px}
+.err{color:var(--crit);font-size:14px;min-height:20px;margin-bottom:6px}
+.pf{display:flex;flex-wrap:wrap;gap:10px}
+.more{margin-top:26px;padding-top:20px;border-top:1px solid var(--line)}
+.more .pf{margin-bottom:18px}
+.hist li{display:flex;justify-content:space-between;gap:14px;padding-block:7px;border-top:1px solid var(--line);font-size:13px;color:var(--ice2)}
+.hist li span:first-child{font-family:var(--mono);color:var(--ice3);flex:none}
+.data textarea{min-height:200px;font:400 12px/1.5 var(--mono)}
+.data p{color:var(--ice2);font-size:14px;margin-bottom:14px}
+
+#toast{position:fixed;left:50%;bottom:calc(16px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:60;display:flex;align-items:center;gap:14px;max-width:min(calc(100% - 32px),460px);background:var(--ice);color:var(--ink);border-radius:10px;padding:12px 16px;font-size:14px;font-weight:500}
+#toast button{background:none;border:0;padding:0;font-weight:700;color:var(--aurora-dk);text-decoration:underline;cursor:pointer}
+
+footer .wrap{padding-block:28px 40px;border-top:1px solid var(--line);color:var(--ice3);font-size:13px;display:flex;flex-wrap:wrap;justify-content:space-between;gap:10px}
+
+@media (max-width:980px){
+  .hero-grid,.how-head{grid-template-columns:minmax(0,1fr);gap:32px}
+  .feats{grid-template-columns:minmax(0,1fr);gap:28px}
+  .stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .panels{grid-template-columns:minmax(0,1fr)}
+  .tools{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .tools .q{grid-column:1/-1}
+  .list-head{display:none}
+  .row{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 14px}
+  .c-main,.c-act{grid-column:1/-1}
+  .c-act{justify-content:flex-start}
+  .row [data-label]::before{content:attr(data-label);display:block;font:500 10px/1 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--ice3);margin-bottom:5px}
+}
+@media (max-width:560px){
+  .hero-grid{padding-block:48px 56px}
+  .band-ice .wrap{padding-block:56px}
+  .vault{padding-block:56px 64px}
+  .nav a.l{display:none}
+  .rway{--nc:96px}
+  .tk.alt{display:none}
+  .fg{grid-template-columns:1fr}
+  .al{grid-template-columns:minmax(0,1fr)}
+  .al-a{justify-content:flex-start}
+}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{animation:none!important;transition:none!important}}
+</style>
+
+<header class="top">
+  <div class="wrap bar">
+    <a class="brand" href="#top" aria-label="Tenor home">
+      <svg viewBox="0 0 26 26" fill="none" aria-hidden="true"><rect x="3" y="2.5" width="16" height="21" rx="2.5" stroke="#EAF5FB" stroke-width="1.6"/><path d="M7 9h8M7 13h8M7 17h4" stroke="#EAF5FB" stroke-width="1.6" stroke-linecap="round"/><circle cx="19.5" cy="19.5" r="4.5" fill="#52FFB8"/><path d="M17.4 19.5l1.4 1.4 2.4-2.6" stroke="#05090B" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Tenor
+    </a>
+    <nav class="nav" aria-label="Primary">
+      <a class="l" href="#how">How it works</a>
+      <a class="l" href="#vault">Vault</a>
+      <button class="btn primary sm" type="button" data-act="add">Add contract</button>
+    </nav>
+  </div>
+</header>
+
+<main id="top">
+  <section class="hero">
+    <canvas id="aurora" aria-hidden="true"></canvas>
+    <div class="wrap hero-grid">
+      <div>
+        <p class="eyebrow">Contract management for businesses</p>
+        <h1>Know every renewal <em>before it renews.</em></h1>
+        <p class="lede">Tenor stores your contracts, tracks every renewal, and alerts you ahead of each notice deadline, so nothing rolls over unnoticed.</p>
+        <div class="cta">
+          <a class="btn primary" href="#vault">Open the vault</a>
+          <a class="btn" href="#how">See how it works</a>
+        </div>
+      </div>
+      <aside class="next" aria-label="Next deadlines">
+        <h2>Next deadlines</h2>
+        <ul id="hero-next"></ul>
+      </aside>
+    </div>
+  </section>
+
+  <section class="band-ice" id="how">
+    <div class="wrap">
+      <div class="how-head">
+        <h2>The date that costs you money is not the end date.</h2>
+        <p>Most contracts renew automatically unless you give notice weeks or months early. Tenor works out that last safe day for every agreement and puts it first.</p>
+      </div>
+      <div class="calc" role="img" aria-label="Example: a contract ending 31 December with 60 days notice must be actioned by 1 November">
+        <span class="lbl">Worked example</span>
+        <span class="eq">Ends <s>31 Dec</s></span>
+        <span class="eq"><s>&minus;</s> 60 days notice</span>
+        <span class="eq"><s>=</s> act by <b>1 Nov</b></span>
+      </div>
+      <div class="feats">
+        <div>
+          <span class="k">Store</span>
+          <h3>One vault for every agreement</h3>
+          <p>Counterparty, category, annual value, start and end dates, owner, a link to the signed copy and notes. Search and filter across all of it.</p>
+        </div>
+        <div>
+          <span class="k">Track</span>
+          <h3>Notice deadlines, not just end dates</h3>
+          <p>A runway chart shows how long you have before each notice window opens. Renew in one click and the new end date and history are recorded.</p>
+        </div>
+        <div>
+          <span class="k">Alert</span>
+          <h3>Alerts at the lead times you choose</h3>
+          <p>Pick 90, 60, 30, 14 or 7 days. Alerts grow more urgent as the deadline closes and stay open until you mark them handled.</p>
+        </div>
+      </div>
+      <p class="fine">Tenor runs entirely in your browser. Contracts are saved on this device, nothing is uploaded, and alerts appear in the vault each time you open it.</p>
+    </div>
+  </section>
+
+  <section class="vault" id="vault">
+    <div class="wrap">
+      <div class="vh">
+        <div>
+          <h2>Vault</h2>
+          <p class="today mono" id="today"></p>
+        </div>
+        <div class="acts">
+          <button class="btn" type="button" data-act="data">Backup and data</button>
+          <button class="btn primary" type="button" data-act="add">Add contract</button>
+        </div>
+      </div>
+
+      <div class="banner" id="examples" hidden>
+        <span>Example contracts are loaded so you can see how Tenor works.</span>
+        <button class="btn sm" type="button" data-act="rm-examples">Remove examples</button>
+      </div>
+
+      <div class="stats" id="stats"></div>
+
+      <div class="panels">
+        <section class="card" aria-labelledby="h-alerts">
+          <div class="hd"><h3 id="h-alerts">Alerts</h3><button type="button" id="toggle-handled" hidden></button></div>
+          <ul id="alerts"></ul>
+        </section>
+        <section class="card" aria-labelledby="h-run">
+          <div class="hd"><h3 id="h-run">Runway, next 12 months</h3></div>
+          <div class="rway" id="runway"></div>
+          <div class="key"><span><i class="a"></i>Time before notice is due</span><span><i class="w"></i>Notice window</span><span><i class="e"></i>End date</span></div>
+        </section>
+      </div>
+
+      <div class="tools">
+        <input class="q" id="q" type="search" placeholder="Search name, counterparty, owner or notes" aria-label="Search contracts">
+        <select id="fstatus" aria-label="Filter by status">
+          <option value="all">All statuses</option>
+          <option value="action">Needs action</option>
+          <option value="ok">On track</option>
+          <option value="expired">Expired</option>
+          <option value="closed">Closed</option>
+        </select>
+        <select id="fcat" aria-label="Filter by category"></select>
+        <select id="fsort" aria-label="Sort contracts">
+          <option value="deadline">Sort: next deadline</option>
+          <option value="end">Sort: end date</option>
+          <option value="value">Sort: value</option>
+          <option value="name">Sort: name</option>
+        </select>
+      </div>
+      <div class="opts">
+        <div class="chips" id="leads" role="group" aria-label="Alert lead times"><span class="lab">Alert me</span></div>
+        <label class="chips"><span class="lab">Currency</span>
+          <select id="cur"><option>USD</option><option>EUR</option><option>GBP</option><option>EGP</option><option>SAR</option></select>
+        </label>
+      </div>
+
+      <div class="list-head" aria-hidden="true"><span>Agreement</span><span>Annual value</span><span>Ends</span><span>Notice by</span><span>Status</span><span></span></div>
+      <div id="list"></div>
+    </div>
+  </section>
+</main>
+
+<footer><div class="wrap"><span>Tenor. Saved on this device only.</span><span class="mono" id="foot-count"></span></div></footer>
+
+<!-- Contract panel -->
+<div class="ov" id="ov-contract" hidden>
+  <div class="panel" role="dialog" aria-modal="true" aria-labelledby="pc-title">
+    <div class="ph"><h2 id="pc-title">Add contract</h2><button type="button" class="x" data-act="close" aria-label="Close">&times;</button></div>
+    <form id="form" novalidate>
+      <div class="fg">
+        <div class="f full"><label for="f-name">Agreement name</label><input id="f-name" maxlength="120" placeholder="Managed hosting agreement"></div>
+        <div class="f"><label for="f-party">Counterparty</label><input id="f-party" maxlength="120" placeholder="Cobalt Cloud"></div>
+        <div class="f"><label for="f-cat">Category</label><select id="f-cat"></select></div>
+        <div class="f"><label for="f-value">Annual value</label><input id="f-value" type="number" min="0" step="any" inputmode="decimal" placeholder="48000"></div>
+        <div class="f"><label for="f-owner">Owner</label><input id="f-owner" maxlength="80" placeholder="Who manages it"></div>
+        <div class="f"><label for="f-start">Start date</label><input id="f-start" type="date"></div>
+        <div class="f"><label for="f-end">End date</label><input id="f-end" type="date"></div>
+        <div class="f"><label for="f-notice">Notice period (days)</label><input id="f-notice" type="number" min="0" max="730" step="1" inputmode="numeric"></div>
+        <div class="f"><label for="f-term">Renewal term (months)</label><input id="f-term" type="number" min="1" max="120" step="1" inputmode="numeric"></div>
+        <div class="f full"><label class="chk"><input id="f-auto" type="checkbox"> Renews automatically unless cancelled</label></div>
+      </div>
+      <div class="np" id="np" aria-live="polite"></div>
+      <div class="f"><label for="f-link">Link to signed copy</label><input id="f-link" type="url" maxlength="400" placeholder="https://drive.example.com/contract"><small>Where the signed document lives. Opens in a new tab.</small></div>
+      <div class="f"><label for="f-notes">Notes</label><textarea id="f-notes" maxlength="2000" placeholder="Price changes, termination terms, who to call"></textarea></div>
+      <p class="err" id="form-err" role="alert"></p>
+      <div class="pf"><button class="btn primary" type="submit">Save contract</button><button class="btn" type="button" data-act="close">Cancel</button></div>
+    </form>
+    <div class="more" id="more" hidden>
+      <div class="pf">
+        <button class="btn" type="button" id="x-renew">Renew</button>
+        <button class="btn" type="button" id="x-term">Mark closed</button>
+        <button class="btn danger" type="button" id="x-del">Delete</button>
+      </div>
+      <h3 class="lab" style="margin-bottom:8px">History</h3>
+      <ul class="hist" id="x-hist"></ul>
+    </div>
+  </div>
+</div>
+
+<!-- Data panel -->
+<div class="ov" id="ov-data" hidden>
+  <div class="panel data" role="dialog" aria-modal="true" aria-labelledby="pd-title">
+    <div class="ph"><h2 id="pd-title">Backup and data</h2><button type="button" class="x" data-act="close" aria-label="Close">&times;</button></div>
+    <p>Contracts live in this browser only. Copy the backup text somewhere safe, and paste it back here to restore it on this or another device.</p>
+    <div class="f"><label for="d-json">Backup</label><textarea id="d-json" spellcheck="false"></textarea></div>
+    <div class="pf">
+      <button class="btn primary" type="button" id="d-copy">Copy backup</button>
+      <button class="btn" type="button" id="d-restore">Restore from text</button>
+    </div>
+    <p class="err" id="d-err" role="alert" style="margin-top:12px"></p>
+    <div class="more">
+      <div class="pf">
+        <button class="btn" type="button" id="d-examples">Load example contracts</button>
+        <button class="btn danger" type="button" id="d-clear">Clear everything</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="toast" role="status" aria-live="polite" hidden></div>
+
+<script>
+(function () {
+  'use strict';
+  var KEY = 'tenor.v1';
+  var DAY = 86400000;
+  var CATS = ['Software', 'Services', 'Real estate', 'Equipment', 'Insurance', 'Employment', 'Other'];
+  var LEADS = [90, 60, 30, 14, 7];
+  var CURS = ['USD', 'EUR', 'GBP', 'EGP', 'SAR'];
+
+  var $ = function (s, r) { return (r || document).querySelector(s); };
+  var esc = function (s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  };
+  var uid = function () { return 'c' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6); };
+
+  /* ---------- dates (whole days, UTC based) ---------- */
+  function todayN() {
+    var d = new Date();
+    return Math.floor(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()) / DAY);
+  }
+  function toN(s) {
+    var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(s || '');
+    return m ? Math.floor(Date.UTC(+m[1], +m[2] - 1, +m[3]) / DAY) : NaN;
+  }
+  function toS(n) { return new Date(n * DAY).toISOString().slice(0, 10); }
+  function addMonths(s, k) {
+    var p = s.split('-').map(Number);
+    var t = new Date(Date.UTC(p[0], p[1] - 1 + k, 1));
+    var last = new Date(Date.UTC(t.getUTCFullYear(), t.getUTCMonth() + 1, 0)).getUTCDate();
+    t.setUTCDate(Math.min(p[2], last));
+    return t.toISOString().slice(0, 10);
+  }
+  var dfmt = new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' });
+  function fd(s) { return dfmt.format(new Date(toN(s) * DAY)); }
+  function rel(n) {
+    if (n === 0) return 'today';
+    if (n === 1) return 'tomorrow';
+    if (n === -1) return 'yesterday';
+    return n > 0 ? 'in ' + n + ' days' : (-n) + ' days ago';
+  }
+
+  /* ---------- state ---------- */
+  function safeLink(l) {
+    try { var u = new URL(String(l || '').trim()); return /^https?:$/.test(u.protocol) ? u.href : ''; } catch (e) { return ''; }
+  }
+  function normContract(c) {
+    if (!c || typeof c !== 'object') return null;
+    var s = function (x, m) { return typeof x === 'string' ? x.slice(0, m || 300) : ''; };
+    var n = function (x, d, lo, hi) { x = Math.round(Number(x)); return isFinite(x) ? Math.min(hi, Math.max(lo, x)) : d; };
+    var end = s(c.end, 10);
+    if (isNaN(toN(end))) return null;
+    var name = s(c.name, 120).trim();
+    if (!name) return null;
+    var start = s(c.start, 10);
+    return {
+      id: s(c.id, 40) || uid(), name: name, party: s(c.party, 120).trim(),
+      category: CATS.indexOf(c.category) >= 0 ? c.category : 'Other',
+      value: Math.max(0, Number(c.value) || 0), start: isNaN(toN(start)) ? '' : start, end: end,
+      noticeDays: n(c.noticeDays, 30, 0, 730), termMonths: n(c.termMonths, 12, 1, 120),
+      autoRenew: !!c.autoRenew, owner: s(c.owner, 80).trim(), link: safeLink(c.link), notes: s(c.notes, 2000),
+      status: c.status === 'terminated' ? 'terminated' : 'active', example: !!c.example,
+      history: Array.isArray(c.history) ? c.history.slice(0, 30).map(function (h) { return { d: s(h && h.d, 10), t: s(h && h.t, 200) }; }) : []
+    };
+  }
+  function normState(o) {
+    var st = o.settings || {};
+    var leads = Array.isArray(st.leads) ? st.leads.filter(function (x) { return LEADS.indexOf(x) >= 0; }) : [90, 30, 7];
+    return {
+      contracts: o.contracts.map(normContract).filter(Boolean),
+      settings: { currency: CURS.indexOf(st.currency) >= 0 ? st.currency : 'USD', leads: leads },
+      ack: (o.ack && typeof o.ack === 'object') ? o.ack : {}
+    };
+  }
+  function seedState() {
+    var t = todayN();
+    var mk = function (name, party, cat, value, endOff, notice, term, auto, owner, notes) {
+      var end = toS(t + endOff);
+      return { id: uid(), name: name, party: party, category: cat, value: value, start: addMonths(end, -term), end: end,
+        noticeDays: notice, termMonths: term, autoRenew: auto, owner: owner, link: '', notes: notes, status: 'active',
+        example: true, history: [{ d: toS(t - 120), t: 'Added' }] };
+    };
+    return {
+      contracts: [
+        mk('Managed hosting agreement', 'Cobalt Cloud', 'Software', 48000, 38, 30, 12, true, 'Dina', 'Moves to the next tier if usage passes 80%.'),
+        mk('Fleet lease, 6 vans', 'Kestrel Leasing', 'Equipment', 62000, 20, 30, 24, true, 'Omar', 'Early exit fee is three months of payments.'),
+        mk('Payroll platform', 'Ledgerly', 'Software', 15600, 57, 30, 12, true, 'Nadia', ''),
+        mk('Logistics master services', 'Halden Freight', 'Services', 120000, 95, 60, 12, true, 'Omar', 'Volume discount applies above 400 shipments a month.'),
+        mk('Business insurance', 'Brightline Mutual', 'Insurance', 18400, 160, 45, 12, true, 'Nadia', ''),
+        mk('Office lease, floor 4', 'Meridian Properties', 'Real estate', 96000, 212, 90, 36, false, 'Nadia', 'Rent review clause in year 3.'),
+        mk('Brand design retainer', 'Pixel & Pine', 'Services', 24000, 400, 30, 6, false, 'Dina', ''),
+        mk('Legal retainer', 'Orchard & Vale LLP', 'Services', 36000, -12, 30, 12, false, 'Dina', 'Lapsed. Waiting on revised rates.')
+      ],
+      settings: { currency: 'USD', leads: [90, 30, 7] },
+      ack: {}
+    };
+  }
+  function load() {
+    try {
+      var r = localStorage.getItem(KEY);
+      if (r) { var o = JSON.parse(r); if (o && Array.isArray(o.contracts)) return normState(o); }
+    } catch (e) {}
+    return seedState();
+  }
+  var state = load();
+  function save() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} }
+  save();
+
+  var ui = { q: '', status: 'all', cat: 'all', sort: 'deadline', showHandled: false, editing: null, opener: null };
+  var find = function (id) { return state.contracts.filter(function (c) { return c.id === id; })[0]; };
+  var maxLead = function () { return state.settings.leads.length ? Math.max.apply(null, state.settings.leads) : 0; };
+  var money = function (v) {
+    try { return new Intl.NumberFormat(undefined, { style: 'currency', currency: state.settings.currency, maximumFractionDigits: 0 }).format(v); }
+    catch (e) { return String(v); }
+  };
+
+  /* ---------- derived values ---------- */
+  function info(c) {
+    var t = todayN(), end = toN(c.end), dl = end - c.noticeDays;
+    return { t: t, end: end, dl: dl, left: end - t, toDl: dl - t };
+  }
+  function status(c) {
+    if (c.status === 'terminated') return { key: 'closed', label: 'Closed', sev: 'closed' };
+    var i = info(c), max = maxLead();
+    if (i.left < 0) return { key: 'expired', label: 'Expired', sev: 'crit', days: i.left };
+    if (c.autoRenew && i.toDl < 0) return { key: 'locked', label: 'Will renew', sev: 'warn', days: i.toDl };
+    var useNotice = c.autoRenew || i.toDl >= 0;
+    var d = useNotice ? i.toDl : i.left;
+    if (d <= max) {
+      var sev = d <= 7 ? 'crit' : d <= 30 ? 'warn' : 'info';
+      return { key: 'action', label: sev === 'crit' ? 'Urgent' : sev === 'warn' ? 'Due soon' : 'Upcoming', sev: sev, days: d, basis: useNotice ? 'notice' : 'end' };
+    }
+    return { key: 'ok', label: 'On track', sev: 'ok' };
+  }
+  function nextDate(c) {
+    var i = info(c);
+    if (c.autoRenew) return i.toDl >= 0 ? { n: i.dl, kind: 'notice' } : { n: i.end, kind: 'renews' };
+    return i.toDl >= 0 ? { n: i.dl, kind: 'notice' } : { n: i.end, kind: 'ends' };
+  }
+  function alertsList() {
+    var out = [];
+    state.contracts.forEach(function (c) {
+      var st = status(c), i = info(c);
+      if (st.key === 'closed' || st.key === 'ok') return;
+      var msg;
+      if (st.key === 'expired') msg = 'Expired ' + rel(i.left) + '. Renew it or mark it closed.';
+      else if (st.key === 'locked') msg = 'The notice deadline passed ' + rel(i.toDl) + ', so it renews on ' + fd(c.end) + ' for another ' + c.termMonths + ' months.';
+      else if (st.basis === 'notice') msg = 'Notice deadline ' + rel(st.days) + ' (' + fd(toS(i.dl)) + '). ' + (c.autoRenew ? 'Cancel or renegotiate before it renews.' : 'Last day to renegotiate before it ends.');
+      else msg = 'Ends ' + rel(st.days) + ' (' + fd(c.end) + '). Renew it or let it lapse.';
+      out.push({ c: c, st: st, msg: msg, key: c.end + '|' + st.key, n: st.key === 'locked' ? i.left : st.days });
+    });
+    out.sort(function (a, b) { return a.n - b.n; });
+    return out;
+  }
+  var handled = function (a) { return state.ack[a.c.id] === a.key; };
+
+  /* ---------- toast ---------- */
+  var toastT;
+  function toast(msg, label, fn) {
+    var el = $('#toast');
+    el.innerHTML = '<span>' + esc(msg) + '</span>' + (label ? '<button type="button">' + esc(label) + '</button>' : '');
+    el.hidden = false;
+    if (label) $('button', el).onclick = function () { fn(); el.hidden = true; };
+    clearTimeout(toastT);
+    toastT = setTimeout(function () { el.hidden = true; }, 6500);
+  }
+
+  /* ---------- render ---------- */
+  function renderHero() {
+    var items = state.contracts.filter(function (c) { var k = status(c).key; return k !== 'closed' && k !== 'expired'; })
+      .map(function (c) { return { c: c, nd: nextDate(c) }; })
+      .sort(function (a, b) { return a.nd.n - b.nd.n; }).slice(0, 3);
+    var t = todayN();
+    $('#hero-next').innerHTML = items.length ? items.map(function (x) {
+      var verb = x.nd.kind === 'notice' ? 'Notice by' : x.nd.kind === 'renews' ? 'Renews' : 'Ends';
+      return '<li><div><span class="n">' + esc(x.c.name) + '</span><span class="p">' + esc(x.c.party) + '</span></div>' +
+        '<div class="d">' + esc(fd(toS(x.nd.n))) + '<span>' + verb + ', ' + rel(x.nd.n - t) + '</span></div></li>';
+    }).join('') : '<li class="empty">Nothing due. Add a contract to start tracking.</li>';
+  }
+
+  function renderStats() {
+    var live = state.contracts.filter(function (c) { var k = status(c).key; return k !== 'closed' && k !== 'expired'; });
+    var total = live.reduce(function (a, c) { return a + c.value; }, 0);
+    var open = alertsList().filter(function (a) { return !handled(a); }).length;
+    var t = todayN();
+    var nx = live.map(function (c) { return nextDate(c).n - t; }).sort(function (a, b) { return a - b; })[0];
+    var tiles = [
+      ['Active agreements', String(live.length), live.length === 1 ? 'contract in force' : 'contracts in force'],
+      ['Annual value', money(total), 'across active agreements'],
+      ['Open alerts', String(open), open ? 'need a decision' : 'all clear'],
+      ['Next deadline', nx === undefined ? 'None' : nx <= 0 ? 'Today' : nx + (nx === 1 ? ' day' : ' days'), nx === undefined ? 'nothing scheduled' : 'until the next date that matters']
+    ];
+    $('#stats').innerHTML = tiles.map(function (x) {
+      return '<div class="stat"><span class="k">' + x[0] + '</span><span class="v">' + esc(x[1]) + '</span><span class="s">' + x[2] + '</span></div>';
+    }).join('');
+  }
+
+  function renderAlerts() {
+    var all = alertsList();
+    var open = all.filter(function (a) { return !handled(a); });
+    var done = all.filter(handled);
+    var show = ui.showHandled ? all : open;
+    $('#alerts').innerHTML = show.length ? show.map(function (a) {
+      var h = handled(a);
+      return '<li class="al' + (h ? ' handled' : '') + '" data-id="' + esc(a.c.id) + '"><div><p class="al-t">' + esc(a.c.name) + '<span>' + esc(a.c.party) + '</span></p>' +
+        '<p class="al-m">' + esc(a.msg) + '</p></div><div class="al-a">' +
+        '<span class="pill ' + a.st.sev + '">' + esc(a.st.label) + '</span>' +
+        (h ? '<button class="btn sm" type="button" data-act="unack" data-id="' + esc(a.c.id) + '">Reopen</button>'
+           : '<button class="btn sm" type="button" data-act="renew" data-id="' + esc(a.c.id) + '">Renew</button>' +
+             '<button class="btn sm" type="button" data-act="ack" data-id="' + esc(a.c.id) + '" data-key="' + esc(a.key) + '">Mark handled</button>') +
+        '</div></li>';
+    }).join('') : '<li class="zero">' + (state.contracts.length ? 'No open alerts. Every notice deadline is outside your alert window.' : 'No contracts yet. Add one and its deadlines will show up here.') + '</li>';
+    var tg = $('#toggle-handled');
+    tg.hidden = !done.length;
+    tg.textContent = ui.showHandled ? 'Hide handled' : 'Show ' + done.length + ' handled';
+  }
+
+  function renderRunway() {
+    var t = todayN(), span = 365;
+    var items = state.contracts.filter(function (c) { return c.status !== 'terminated' && toN(c.end) >= t; })
+      .sort(function (a, b) { return toN(a.end) - toN(b.end); });
+    var shown = items.slice(0, 10);
+    if (!shown.length) { $('#runway').innerHTML = '<p class="zero">No active contracts to chart. Add one to see how much runway it has.</p>'; return; }
+    var now = new Date(), y = now.getFullYear(), m = now.getMonth();
+    var ticks = '', lines = '<i class="gl today" style="--p:0"></i>';
+    for (var k = 1; k <= 12; k++) {
+      var dn = Math.floor(Date.UTC(y, m + k, 1) / DAY) - t, p = dn / span;
+      if (p > 1) break;
+      var dt = new Date(Date.UTC(y, m + k, 1));
+      var lb = dt.toLocaleString('en-GB', { month: 'short', timeZone: 'UTC' }) + (dt.getUTCMonth() === 0 ? " '" + String(dt.getUTCFullYear()).slice(2) : '');
+      ticks += '<span class="tk' + (k % 2 === 0 ? ' alt' : '') + '" style="left:' + (p * 100).toFixed(2) + '%">' + lb + '</span>';
+      lines += '<i class="gl" style="--p:' + p.toFixed(4) + '"></i>';
+    }
+    var rows = shown.map(function (c) {
+      var i = info(c), dlOff = Math.max(0, i.toDl), endOff = i.left;
+      var runW = Math.min(dlOff, span) / span * 100;
+      var winS = Math.min(dlOff, span) / span * 100;
+      var winW = Math.max(0, Math.min(endOff, span) - Math.min(dlOff, span)) / span * 100;
+      var h = '<span class="seg run" style="left:0;width:' + runW.toFixed(2) + '%"></span>' +
+        '<span class="seg win" style="left:' + winS.toFixed(2) + '%;width:' + winW.toFixed(2) + '%"></span>';
+      if (i.toDl >= 0 && i.toDl <= span) h += '<span class="mk dl" style="left:' + (i.toDl / span * 100).toFixed(2) + '%"></span>';
+      h += endOff <= span ? '<span class="mk" style="left:' + (endOff / span * 100).toFixed(2) + '%"></span>' : '<span class="mk over" style="left:100%">&rsaquo;</span>';
+      return '<button type="button" class="rw" data-act="edit" data-id="' + esc(c.id) + '" title="' + esc(c.name + ', ends ' + fd(c.end)) + '">' +
+        '<span class="rw-name">' + esc(c.name) + '</span><span class="rw-track">' + h + '</span></button>';
+    }).join('');
+    $('#runway').innerHTML = '<div class="rw-axis"><span></span><div class="ax">' + ticks + '</div></div><div class="rw-body">' + lines + rows + '</div>' +
+      (items.length > shown.length ? '<p class="zero" style="font-size:13px">Showing the ' + shown.length + ' nearest of ' + items.length + ' active contracts.</p>' : '');
+  }
+
+  function matches(c) {
+    var st = status(c);
+    if (ui.status === 'action' && ['action', 'locked', 'expired'].indexOf(st.key) < 0) return false;
+    if (['ok', 'expired', 'closed'].indexOf(ui.status) >= 0 && st.key !== ui.status) return false;
+    if (ui.cat !== 'all' && c.category !== ui.cat) return false;
+    if (ui.q) {
+      var hay = (c.name + ' ' + c.party + ' ' + c.owner + ' ' + c.notes + ' ' + c.category).toLowerCase();
+      if (hay.indexOf(ui.q.toLowerCase()) < 0) return false;
+    }
+    return true;
+  }
+  function sortKey(c) {
+    if (c.status === 'terminated') return 1e9;
+    var k = status(c).key;
+    return k === 'expired' ? toN(c.end) : nextDate(c).n;
+  }
+  function renderList() {
+    var rows = state.contracts.filter(matches);
+    var s = ui.sort;
+    rows.sort(function (a, b) {
+      if (s === 'end') return toN(a.end) - toN(b.end);
+      if (s === 'value') return b.value - a.value;
+      if (s === 'name') return a.name.localeCompare(b.name);
+      return sortKey(a) - sortKey(b);
+    });
+    $('#list').innerHTML = rows.length ? rows.map(function (c) {
+      var st = status(c), i = info(c), closed = st.key === 'closed';
+      var dlSub = closed ? '' : i.toDl >= 0 ? rel(i.toDl) : 'passed ' + rel(i.toDl);
+      var dlCls = !closed && i.toDl >= 0 && i.toDl <= 7 ? 'crit' : !closed && i.toDl >= 0 && i.toDl <= 30 ? 'warn' : '';
+      return '<article class="row" data-id="' + esc(c.id) + '">' +
+        '<div class="c-main"><button class="link" type="button" data-act="edit" data-id="' + esc(c.id) + '">' + esc(c.name) + '</button>' +
+        '<span class="sub">' + esc(c.party) + (c.party ? ' &middot; ' : '') + esc(c.category) + (c.autoRenew ? ' &middot; auto-renews' : '') + '</span></div>' +
+        '<div class="c-val" data-label="Annual value">' + esc(money(c.value)) + '</div>' +
+        '<div class="c-end" data-label="Ends"><b>' + esc(fd(c.end)) + '</b><span class="sub">' + esc(rel(i.left)) + '</span></div>' +
+        '<div class="c-dl" data-label="Notice by"><b>' + (closed ? '&ndash;' : esc(fd(toS(i.dl)))) + '</b><span class="sub ' + dlCls + '">' + esc(dlSub) + '</span></div>' +
+        '<div class="c-st" data-label="Status"><span class="pill ' + st.sev + '">' + esc(st.label) + '</span></div>' +
+        '<div class="c-act">' + (closed
+          ? '<button class="btn sm" type="button" data-act="reopen" data-id="' + esc(c.id) + '">Reopen</button>'
+          : '<button class="btn sm" type="button" data-act="renew" data-id="' + esc(c.id) + '" title="Extend the end date by one renewal term">Renew ' + c.termMonths + ' mo</button>') +
+        '<button class="btn sm" type="button" data-act="edit" data-id="' + esc(c.id) + '">Edit</button></div></article>';
+    }).join('') : '<div class="none">' + (state.contracts.length ? 'No contracts match these filters.' : 'The vault is empty. Add your first contract to start tracking renewals.') + '</div>';
+  }
+
+  function renderControls() {
+    $('#leads').innerHTML = '<span class="lab">Alert me</span>' + LEADS.map(function (d) {
+      return '<button type="button" class="chip" data-lead="' + d + '" aria-pressed="' + (state.settings.leads.indexOf(d) >= 0) + '">' + d + ' days before</button>';
+    }).join('');
+    $('#cur').value = state.settings.currency;
+    $('#examples').hidden = !state.contracts.some(function (c) { return c.example; });
+    $('#foot-count').textContent = state.contracts.length + (state.contracts.length === 1 ? ' contract' : ' contracts');
+  }
+
+  function renderAll() {
+    renderHero(); renderStats(); renderAlerts(); renderRunway(); renderList(); renderControls();
+  }
+
+  /* ---------- panels ---------- */
+  function openOv(id) {
+    var el = $(id);
+    ui.opener = document.activeElement;
+    el.hidden = false;
+    var f = $('input,textarea,button.btn', el);
+    setTimeout(function () { if (f) f.focus(); }, 0);
+  }
+  function closeOv() {
+    ['#ov-contract', '#ov-data'].forEach(function (id) { $(id).hidden = true; });
+    ui.editing = null;
+    resetArmed();
+    if (ui.opener && ui.opener.focus) { try { ui.opener.focus(); } catch (e) {} }
+  }
+  var armed = {};
+  function resetArmed() {
+    Object.keys(armed).forEach(function (k) {
+      var b = $(k); if (b) { b.classList.remove('armed'); b.textContent = armed[k].orig; }
+    });
+    armed = {};
+  }
+  function twoStep(sel, label, fn) {
+    var b = $(sel);
+    if (armed[sel]) { var a = armed[sel]; clearTimeout(a.t); b.classList.remove('armed'); b.textContent = a.orig; delete armed[sel]; fn(); return; }
+    armed[sel] = { orig: b.textContent, t: setTimeout(function () { if (armed[sel]) { b.classList.remove('armed'); b.textContent = armed[sel].orig; delete armed[sel]; } }, 4000) };
+    b.classList.add('armed'); b.textContent = label;
+  }
+
+  function fillSelect(sel, withAll) {
+    $(sel).innerHTML = (withAll ? '<option value="all">All categories</option>' : '') + CATS.map(function (c) { return '<option>' + c + '</option>'; }).join('');
+  }
+  var F = function (id) { return $('#f-' + id); };
+  function updateNotice() {
+    var e = toN(F('end').value), n = parseInt(F('notice').value, 10);
+    $('#np').textContent = isNaN(e) || isNaN(n) || n < 0
+      ? 'Set an end date and notice period to see the notice deadline.'
+      : 'Notice deadline: ' + fd(toS(e - n)) + ' (' + n + ' days before the end date)';
+  }
+  function openContract(id) {
+    var c = id ? find(id) : null;
+    ui.editing = c ? c.id : null;
+    $('#pc-title').textContent = c ? 'Edit contract' : 'Add contract';
+    var t = todayN();
+    F('name').value = c ? c.name : '';
+    F('party').value = c ? c.party : '';
+    F('cat').value = c ? c.category : 'Software';
+    F('value').value = c ? c.value : '';
+    F('owner').value = c ? c.owner : '';
+    F('start').value = c ? c.start : toS(t);
+    F('end').value = c ? c.end : addMonths(toS(t), 12);
+    F('notice').value = c ? c.noticeDays : 30;
+    F('term').value = c ? c.termMonths : 12;
+    F('auto').checked = c ? c.autoRenew : true;
+    F('link').value = c ? c.link : '';
+    F('notes').value = c ? c.notes : '';
+    $('#form-err').textContent = '';
+    $('#more').hidden = !c;
+    if (c) {
+      $('#x-term').textContent = c.status === 'terminated' ? 'Reopen' : 'Mark closed';
+      $('#x-renew').textContent = 'Renew ' + c.termMonths + ' months';
+      $('#x-hist').innerHTML = c.history.length ? c.history.map(function (h) {
+        return '<li><span>' + esc(h.d ? fd(h.d) : '') + '</span><span>' + esc(h.t) + '</span></li>';
+      }).join('') : '<li><span></span><span>No history yet.</span></li>';
+    }
+    updateNotice();
+    openOv('#ov-contract');
+  }
+  function readForm() {
+    return {
+      name: F('name').value.trim(), party: F('party').value.trim(), category: F('cat').value,
+      value: F('value').value === '' ? 0 : Number(F('value').value), owner: F('owner').value.trim(),
+      start: F('start').value, end: F('end').value, noticeDays: Number(F('notice').value), termMonths: Number(F('term').value),
+      autoRenew: F('auto').checked, link: F('link').value.trim(), notes: F('notes').value.trim()
+    };
+  }
+  function validate(v) {
+    if (!v.name) return ['name', 'Enter a name for the agreement.'];
+    if (!v.party) return ['party', 'Enter the counterparty.'];
+    if (isNaN(toN(v.end))) return ['end', 'Choose an end date.'];
+    if (v.start && toN(v.start) >= toN(v.end)) return ['end', 'The end date must be after the start date.'];
+    if (!isFinite(v.value) || v.value < 0) return ['value', 'Annual value must be zero or more.'];
+    if (!(v.noticeDays >= 0 && v.noticeDays <= 730) || v.noticeDays % 1) return ['notice', 'Notice period must be a whole number of days, 0 to 730.'];
+    if (!(v.termMonths >= 1 && v.termMonths <= 120) || v.termMonths % 1) return ['term', 'Renewal term must be a whole number of months, 1 to 120.'];
+    if (v.link) {
+      var l = /^[a-z][a-z0-9+.-]*:/i.test(v.link) ? v.link : 'https://' + v.link;
+      if (!safeLink(l)) return ['link', 'Enter a web address that starts with http:// or https://.'];
+      v.link = safeLink(l);
+    }
+    return null;
+  }
+
+  /* ---------- actions ---------- */
+  function addHist(c, text) { c.history.unshift({ d: toS(todayN()), t: text }); c.history = c.history.slice(0, 20); }
+  function snapshot(c) { return JSON.parse(JSON.stringify(c)); }
+  function renew(id) {
+    var c = find(id); if (!c) return;
+    var before = snapshot(c), t = todayN(), e = addMonths(c.end, c.termMonths), g = 0;
+    while (toN(e) < t && g++ < 60) e = addMonths(e, c.termMonths);
+    c.end = e; c.status = 'active';
+    addHist(c, 'Renewed ' + c.termMonths + ' months, now ends ' + fd(e));
+    save(); renderAll();
+    toast('Renewed ' + c.name + ' to ' + fd(e) + '.', 'Undo', function () { Object.assign(c, before); save(); renderAll(); });
+    if (!$('#ov-contract').hidden) closeOv();
+  }
+  function ack(id, key) {
+    var prev = state.ack[id];
+    state.ack[id] = key; save(); renderAll();
+    toast('Alert marked handled.', 'Undo', function () { if (prev === undefined) delete state.ack[id]; else state.ack[id] = prev; save(); renderAll(); });
+  }
+
+  document.addEventListener('click', function (e) {
+    var lead = e.target.closest('[data-lead]');
+    if (lead) {
+      var d = +lead.dataset.lead, a = state.settings.leads, ix = a.indexOf(d);
+      if (ix >= 0) a.splice(ix, 1); else a.push(d);
+      a.sort(function (x, y) { return y - x; });
+      save(); renderAll(); return;
+    }
+    var b = e.target.closest('[data-act]');
+    if (b) {
+      var act = b.dataset.act, id = b.dataset.id;
+      if (act === 'add') openContract(null);
+      else if (act === 'edit') openContract(id);
+      else if (act === 'renew') renew(id);
+      else if (act === 'ack') ack(id, b.dataset.key);
+      else if (act === 'unack') { delete state.ack[id]; save(); renderAll(); }
+      else if (act === 'close') closeOv();
+      else if (act === 'reopen') {
+        var c = find(id); if (c) { c.status = 'active'; addHist(c, 'Reopened'); save(); renderAll(); }
+      }
+      else if (act === 'rm-examples') {
+        var before = state.contracts.slice();
+        state.contracts = state.contracts.filter(function (c) { return !c.example; });
+        save(); renderAll();
+        toast('Example contracts removed.', 'Undo', function () { state.contracts = before; save(); renderAll(); });
+      }
+      else if (act === 'data') { $('#d-json').value = JSON.stringify(state, null, 2); $('#d-err').textContent = ''; openOv('#ov-data'); }
+      return;
+    }
+    if (e.target.classList && e.target.classList.contains('ov')) closeOv();
+  });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && (!$('#ov-contract').hidden || !$('#ov-data').hidden)) closeOv(); });
+
+  $('#toggle-handled').addEventListener('click', function () { ui.showHandled = !ui.showHandled; renderAlerts(); });
+  $('#q').addEventListener('input', function (e) { ui.q = e.target.value.trim(); renderList(); });
+  $('#fstatus').addEventListener('change', function (e) { ui.status = e.target.value; renderList(); });
+  $('#fcat').addEventListener('change', function (e) { ui.cat = e.target.value; renderList(); });
+  $('#fsort').addEventListener('change', function (e) { ui.sort = e.target.value; renderList(); });
+  $('#cur').addEventListener('change', function (e) { state.settings.currency = e.target.value; save(); renderAll(); });
+  ['end', 'notice'].forEach(function (k) { F(k).addEventListener('input', updateNotice); });
+
+  $('#form').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var v = readForm(), err = validate(v);
+    if (err) { $('#form-err').textContent = err[1]; F(err[0]).focus(); return; }
+    var c = ui.editing ? find(ui.editing) : null;
+    if (c) {
+      var endChanged = c.end !== v.end;
+      Object.assign(c, v, { example: false });
+      if (endChanged) addHist(c, 'End date set to ' + fd(v.end));
+      toast('Saved ' + c.name + '.');
+    } else {
+      c = Object.assign({ id: uid(), status: 'active', example: false, history: [] }, v);
+      addHist(c, 'Added');
+      state.contracts.push(c);
+      toast('Added ' + c.name + '.');
+    }
+    save(); closeOv(); renderAll();
+  });
+
+  $('#x-renew').addEventListener('click', function () { if (ui.editing) renew(ui.editing); });
+  $('#x-term').addEventListener('click', function () {
+    var c = find(ui.editing); if (!c) return;
+    if (c.status === 'terminated') { c.status = 'active'; addHist(c, 'Reopened'); } else { c.status = 'terminated'; addHist(c, 'Marked closed'); }
+    save(); closeOv(); renderAll();
+  });
+  $('#x-del').addEventListener('click', function () {
+    twoStep('#x-del', 'Confirm delete', function () {
+      var c = find(ui.editing); if (!c) return;
+      var ix = state.contracts.indexOf(c);
+      state.contracts.splice(ix, 1); save(); closeOv(); renderAll();
+      toast('Deleted ' + c.name + '.', 'Undo', function () { state.contracts.splice(ix, 0, c); save(); renderAll(); });
+    });
+  });
+
+  /* ---------- data panel ---------- */
+  $('#d-copy').addEventListener('click', function () {
+    var ta = $('#d-json');
+    var fallback = function () { ta.focus(); ta.select(); $('#d-err').textContent = 'Press Ctrl+C or Cmd+C to copy the selected text.'; };
+    try {
+      navigator.clipboard.writeText(ta.value).then(function () { $('#d-err').textContent = ''; toast('Backup copied.'); }, fallback);
+    } catch (e) { fallback(); }
+  });
+  $('#d-restore').addEventListener('click', function () {
+    twoStep('#d-restore', 'Replace my data?', function () {
+      try {
+        var o = JSON.parse($('#d-json').value);
+        if (!o || !Array.isArray(o.contracts)) throw new Error('shape');
+        var before = state;
+        state = normState(o); save(); closeOv(); renderAll();
+        toast('Restored ' + state.contracts.length + ' contracts.', 'Undo', function () { state = before; save(); renderAll(); });
+      } catch (err) { $('#d-err').textContent = 'That text is not a Tenor backup. Paste the full backup and try again.'; }
+    });
+  });
+  $('#d-examples').addEventListener('click', function () {
+    var add = seedState().contracts;
+    state.contracts = state.contracts.concat(add); save(); closeOv(); renderAll();
+    toast('Example contracts added.');
+  });
+  $('#d-clear').addEventListener('click', function () {
+    twoStep('#d-clear', 'Confirm clear all', function () {
+      var before = state;
+      state = { contracts: [], settings: state.settings, ack: {} }; save(); closeOv(); renderAll();
+      toast('Vault cleared.', 'Undo', function () { state = before; save(); renderAll(); });
+    });
+  });
+
+  /* ---------- init ---------- */
+  fillSelect('#fcat', true);
+  fillSelect('#f-cat', false);
+  $('#today').textContent = new Intl.DateTimeFormat('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }).format(new Date());
+  renderAll();
+
+  /* ---------- aurora ---------- */
+  (function () {
+    var cv = $('#aurora'); if (!cv || !cv.getContext) return;
+    var ctx = cv.getContext('2d'), w = 0, h = 0, raf = 0;
+    var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var bands = [
+      { c: '82,255,184', y: .22, a: .10, len: .62, f: .0042, s: .00032, p: 0, al: .20 },
+      { c: '0,201,138', y: .30, a: .13, len: .55, f: .0030, s: .00024, p: 2.1, al: .17 },
+      { c: '190,255,230', y: .18, a: .08, len: .45, f: .0056, s: .00040, p: 4.2, al: .10 }
+    ];
+    function size() {
+      var dpr = Math.min(window.devicePixelRatio || 1, 2), r = cv.getBoundingClientRect();
+      w = r.width; h = r.height; cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+    function draw(t) {
+      ctx.clearRect(0, 0, w, h);
+      ctx.globalCompositeOperation = 'lighter';
+      var step = w < 600 ? 8 : 6;
+      bands.forEach(function (b) {
+        for (var x = 0; x <= w; x += step) {
+          var n = Math.sin(x * b.f + t * b.s + b.p) * .5 + Math.sin(x * b.f * 2.3 - t * b.s * .7) * .25;
+          var top = h * b.y + n * h * b.a * 2;
+          var len = h * b.len * (.6 + .4 * Math.sin(x * b.f * 1.7 + t * b.s * .5 + b.p));
+          var g = ctx.createLinearGradient(0, top, 0, top + len);
+          g.addColorStop(0, 'rgba(' + b.c + ',0)');
+          g.addColorStop(.18, 'rgba(' + b.c + ',' + b.al + ')');
+          g.addColorStop(1, 'rgba(' + b.c + ',0)');
+          ctx.fillStyle = g; ctx.fillRect(x, top, step + 1, len);
+        }
+      });
+    }
+    var last = 0;
+    function loop(ts) {
+      raf = requestAnimationFrame(loop);
+      if (document.hidden || ts - last < 40) return;
+      last = ts; draw(ts);
+    }
+    size(); draw(6000);
+    window.addEventListener('resize', function () { size(); if (reduce) draw(6000); });
+    if (!reduce) raf = requestAnimationFrame(loop);
+  })();
+})();
+</script>
+
+</body></html>
